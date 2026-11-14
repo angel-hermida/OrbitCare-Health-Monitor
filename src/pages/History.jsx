@@ -1,0 +1,75 @@
+import { useState } from 'react'
+import TrendChart from '../components/TrendChart.jsx'
+import { H1 } from '../components/ui.js'
+import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
+import { getIndicatorRanges } from '../engine/status.js'
+import { useMission } from '../store/MissionContext.jsx'
+import { getReadings } from '../store/storage.js'
+
+const DAY = 24 * 60 * 60 * 1000
+const RANGES = [7, 30]
+
+// Trend charts for the current astronaut. Bands show the green / yellow / red ranges
+// at the current response level, so they narrow as the mission moves away from Earth.
+export default function History() {
+  const { db, astronaut, responseLevel } = useMission()
+  const [days, setDays] = useState(30)
+  const since = Date.now() - days * DAY
+
+  // Build one chart per number. Blood pressure becomes two charts (top and bottom number).
+  const charts = []
+  for (const type of INDICATOR_ORDER) {
+    const def = THRESHOLDS[type]
+    const readings = getReadings(db, astronaut.id, type).filter((r) => r.timestamp >= since)
+    const ranges = getIndicatorRanges(type, responseLevel.index)
+    if (def.parts) {
+      for (const part of Object.keys(def.parts)) {
+        charts.push({
+          key: `${type}-${part}`,
+          title: `${def.label}: ${def.parts[part].label}`,
+          unit: def.unit,
+          points: readings.map((r) => ({ t: r.timestamp, value: r.value[part] })),
+          ranges: ranges[part],
+        })
+      }
+    } else {
+      charts.push({
+        key: type,
+        title: def.label,
+        unit: def.unit,
+        points: readings.map((r) => ({ t: r.timestamp, value: r.value })),
+        ranges,
+      })
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className={H1}>Trends</h1>
+          <p className="mt-1 text-slate-300">
+            {astronaut.name} · green, yellow and red bands show the limits at the current response level ({responseLevel.label}).
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {RANGES.map((option) => (
+            <button
+              key={option}
+              onClick={() => setDays(option)}
+              className={`cursor-pointer rounded-lg border px-4 py-2 font-medium ${option === days ? 'border-sky-400 bg-sky-500/15 text-sky-300' : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+            >
+              {option} days
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {charts.map(({ key, ...chart }) => (
+          <TrendChart key={key} {...chart} />
+        ))}
+      </div>
+    </div>
+  )
+}

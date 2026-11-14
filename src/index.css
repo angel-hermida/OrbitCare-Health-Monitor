@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #020617; /* slate-950 */
+  color: #e2e8f0; /* slate-200 */
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+}
+
+input[type="range"] {
+  accent-color: #38bdf8;
+}
