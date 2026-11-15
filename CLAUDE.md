@@ -12,7 +12,7 @@ Astronaut health-monitoring web app for NASA Space Apps Challenge 2026. React 19
 - Do only what the task asks. Don't change thresholds, status-colour logic, symptom-tree structure (ids, node types, yes/no links), sensor logic or the demo seed unless the task says so.
 - Text-only tasks: change strings only. No ids, numbers or logic.
 - Don't change what existing buttons, links or forms do.
-- The app must keep working offline. No new runtime network calls except NASA DONKI (`engine/spaceWeather.js`).
+- The app must keep working offline. No new runtime network calls except NASA DONKI (`engine/spaceWeather.js`) and the optional Claude API assistant (`engine/assistant/claude.js`, only when used).
 
 ## Design
 

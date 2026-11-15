@@ -11,6 +11,8 @@ import { usePreferences } from './PreferencesContext.jsx'
 import {
   addAstronaut as addAstronautToDb,
   addReading as addReadingToDb,
+  addRecord as addRecordToDb,
+  removeRecord as removeRecordFromDb,
   allAstronauts,
   findAstronaut,
   getReadings,
@@ -56,6 +58,15 @@ export function MissionProvider({ children }) {
 
   const addReading = useCallback((reading) => {
     setDb((prev) => addReadingToDb(prev, reading))
+  }, [])
+
+  // Medical records read by the AI assistant (see pages/Records.jsx). Always for the signed-in astronaut.
+  const addRecord = useCallback((record) => {
+    setDb((prev) => addRecordToDb(prev, { ...record, astronautId: prev.settings.astronautId }))
+  }, [])
+
+  const removeRecord = useCallback((recordId) => {
+    setDb((prev) => removeRecordFromDb(prev, prev.settings.astronautId, recordId))
   }, [])
 
   const selectAstronaut = useCallback((astronautId) => updateSettings({ astronautId }), [updateSettings])
@@ -118,7 +129,7 @@ export function MissionProvider({ children }) {
   const resetDemo = useCallback(() => {
     setSensors(INITIAL_SENSORS)
     // Demo reset restores the 4 preset astronauts (undoing edits and removals) and keeps custom profiles (their readings are cleared).
-    setDb((prev) => ({ ...createSeedDb(), astronauts: prev.astronauts ?? [] }))
+    setDb((prev) => ({ ...createSeedDb(), astronauts: prev.astronauts ?? [], records: prev.records ?? [] }))
   }, [])
 
   // What the status engine needs to know about the mission.
@@ -151,6 +162,8 @@ export function MissionProvider({ children }) {
     missionState,
     sensors,
     addReading,
+    addRecord,
+    removeRecord,
     selectAstronaut,
     addAstronaut,
     updateAstronaut,

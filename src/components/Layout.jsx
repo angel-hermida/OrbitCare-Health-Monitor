@@ -5,6 +5,7 @@ import { formatDelay } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
 import Logo from './Logo.jsx'
 import { DURATION, EASE_OUT, useAnimationsEnabled } from './motion.jsx'
+import AssistantPanel, { useAssistantChat } from './AssistantPanel.jsx'
 import PresenterPanel from './PresenterPanel.jsx'
 import { BTN_DANGER, LABEL, LEVEL_BADGE } from './ui.js'
 
@@ -23,6 +24,7 @@ const ICONS = {
   mission: 'M5 21V4h12l-2.5 4L17 12H5',
   settings:
     'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+  records: 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M13 10v6',
   profile: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM4 21c0-4 3.6-6 8-6s8 2 8 6',
 }
 
@@ -33,6 +35,7 @@ const NAV = [
     ['/log', 'Log a reading', 'log'],
     ['/symptoms', 'Symptom checker', 'symptoms'],
     ['/history', 'Trends', 'trends'],
+    ['/records', 'Medical records', 'records'],
     ['/guides', 'How to measure', 'guides'],
   ] },
   { title: 'Hazards', links: [
@@ -92,7 +95,7 @@ function Field({ label, children }) {
 
 // Top bar (style guide section 3): logo, who, where, delay to Earth, response level, emergency button.
 // `oc-dark` keeps it dark in the light theme too.
-function Banner() {
+function Banner({ assistantOpen, onToggleAssistant }) {
   const { astronaut, environment, missionDay, comms, responseLevel, selectAstronaut } = useMission()
   return (
     <header className="oc-dark relative z-20 shrink-0 border-b border-oc-blue bg-oc-bg">
@@ -117,6 +120,14 @@ function Banner() {
           <span className="font-mono">{formatDelay(comms)}</span>
         </Field>
         <div className="ml-auto flex items-center gap-5 border-l border-white/30 pl-6">
+          <button
+            onClick={onToggleAssistant}
+            aria-pressed={assistantOpen}
+            title="AI health assistant"
+            className={`cursor-pointer rounded border-2 border-oc-blue px-3 py-1 text-sm font-bold uppercase tracking-wider ${assistantOpen ? 'bg-oc-blue text-oc-paper' : 'text-oc-blue hover:bg-oc-blue/15'}`}
+          >
+            Assistant
+          </button>
           <Link
             to="/distance"
             title="Response level: see how it works"
@@ -163,11 +174,15 @@ function AnimatedOutlet() {
 
 // The page fills the window: top bar fixed at the top, sidebar and page content scroll separately.
 export default function Layout() {
+  // Layout stays mounted across pages, so the conversation survives navigation.
+  const [assistantOpen, setAssistantOpen] = useState(false)
+  const chat = useAssistantChat()
   return (
     <div className="oc-app flex h-full flex-col">
-      <Banner />
+      <Banner assistantOpen={assistantOpen} onToggleAssistant={() => setAssistantOpen((o) => !o)} />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
+        <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} chat={chat} />
         <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-oc-border/50 bg-oc-bg py-5">
           <nav className="space-y-6">
             {NAV.map((group, i) => (

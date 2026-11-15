@@ -7,6 +7,8 @@
 //     astronauts: [custom profiles made in the app; the 4 presets live in data/crew.js],
 //     edits:      { [presetId]: changed fields }   (edits to a preset astronaut),
 //     removedIds: [ids of preset astronauts removed from the crew],
+//     records:    [{ id, astronautId, fileName, fileType, sizeBytes, uploadedAt, extracted }]
+//                 (medical records read by the AI assistant; the file itself is not kept, see addRecord)
 //   }
 
 import { CREW } from '../data/crew.js'
@@ -182,6 +184,7 @@ export function removeAstronaut(db, id) {
     ...db,
     readings: db.readings.filter((r) => r.astronautId !== id),
     symptoms: (db.symptoms ?? []).filter((s) => s.astronautId !== id),
+    records: (db.records ?? []).filter((r) => r.astronautId !== id),
     settings: db.settings.astronautId === id ? { ...db.settings, astronautId: null } : db.settings,
   }
   if (current.custom) next.astronauts = db.astronauts.filter((a) => a.id !== id)
@@ -191,4 +194,25 @@ export function removeAstronaut(db, id) {
     next.edits = rest
   }
   return next
+}
+
+// ----- medical records (AI assistant) -----
+// Only the extracted, structured content and the file's name / type / size are stored.
+// The uploaded file itself is not kept: localStorage is small and the file holds more than the crew needs.
+// extracted: { documentDate, documentType, conditions, medications, allergies, labs, exams, history, notes }
+// Every record belongs to exactly one astronaut. Older saved dbs have no `records` field.
+
+export function addRecord(db, { astronautId, fileName, fileType, sizeBytes, extracted, uploadedAt = Date.now() }) {
+  if (!astronautId) throw new Error('A record needs an astronautId')
+  const record = { id: `m-${Date.now().toString(36)}-${(counter += 1)}`, astronautId, fileName, fileType, sizeBytes, uploadedAt, extracted }
+  return { ...db, records: [...(db.records ?? []), record] }
+}
+
+// One astronaut's records, newest upload first.
+export function getRecords(db, astronautId) {
+  return (db.records ?? []).filter((r) => r.astronautId === astronautId).sort((a, b) => b.uploadedAt - a.uploadedAt)
+}
+
+export function removeRecord(db, astronautId, recordId) {
+  return { ...db, records: (db.records ?? []).filter((r) => !(r.id === recordId && r.astronautId === astronautId)) }
 }

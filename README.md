@@ -29,9 +29,21 @@ Get a free key at https://api.nasa.gov. Without one the app uses NASA's shared `
 
 Note: Vite builds `VITE_` variables into the JavaScript, so anyone with the built site can read the key. That is fine for a free NASA key; never put a secret there.
 
+### Claude API key (AI assistant, optional)
+
+The AI health assistant and medical record reading use the Claude API. Add to `.env`:
+
+```
+VITE_ANTHROPIC_API_KEY=sk-ant-...
+# optional, default claude-sonnet-5-5
+VITE_CLAUDE_MODEL=claude-sonnet-5-5
+```
+
+Restart `npm run dev` afterwards. Without a key the Assistant panel and the Medical records upload say they are unavailable; everything else works as before. **Local demos only:** the key is built into the JavaScript like the NASA key, and unlike the NASA key it is a paid secret. Do not deploy a build that contains it. For a public deploy, move `engine/assistant/claude.js`'s fetch behind a small server function that holds the key.
+
 ## Stack
 
-React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data is in `localStorage`. There is no backend and no network call.
+React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data is in `localStorage`. There is no backend. Network calls: NASA DONKI (space weather) and, only when the assistant is used, the Claude API.
 
 ## What works now
 
@@ -55,6 +67,8 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | Check-in streaks | dashboard status strip, `/profile` |
 | 30 days of demo history | loads on first run, reset from the Presenter panel |
 | Trend charts with colored range bands | `/history` |
+| **AI health assistant** (chat: current vitals, history, range check, trend + forecast, records, opens pages) | **Assistant** button in the top bar, every page |
+| **Medical records**: upload PDF / image, AI extracts conditions, medications, allergies, labs, exams | `/records` |
 
 ### Routes
 
@@ -64,6 +78,7 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | `/log` | Log a reading (`?type=sleep` preselects) | Health |
 | `/symptoms` | Symptom checker | Health |
 | `/history` | Trends | Health |
+| `/records` | Medical records (upload + extracted data) | Health |
 | `/guides` | How to measure (`#sleep` scrolls) | Health |
 | `/radiation`, `/isolation`, `/distance`, `/gravity`, `/environment` | RIDGE hazard pages | Hazards |
 | `/mission` | Mission setup (location) | Mission |
@@ -105,6 +120,11 @@ src/
     seed.js                30-day demo data
     report.js              builds the "Report to Ground" text
     time.js                date helpers
+    assistant/             AI health assistant (see "AI assistant" below)
+      tools.js             the tools the model can call, bound to the signed-in astronaut; NAV_PAGES
+      trend.js             least-squares trend + 95% forecast interval
+      prompt.js            system prompt (honesty, escalation, navigation rules)
+      claude.js            Claude API calls: chat turn with tool use, record extraction
 
   store/
     storage.js             the only file that touches localStorage. addReading() and the
@@ -131,12 +151,34 @@ src/
     MasterAlarm.jsx        red bar + repeating alarm for every red condition (mounted in App.jsx)
     alertSound.js          alarm tones (Web Audio API, no files)
     StreakToast.jsx        "Check-in complete · N-day streak" toast
+    AssistantPanel.jsx     AI assistant chat drawer (opened from the top bar)
+    AssistantCards.jsx     data cards in the chat (vitals, ranges, history, trend), drawn from app data
     ui.js                  shared Tailwind class strings and status colors
 
   pages/                   one file per screen
     CrewPicker, Dashboard, LogReading, Guides, SymptomChecker, Emergency, History,
-    Profile, Settings, MissionSetup, Distance, Radiation, Isolation, Gravity, Environment
+    Profile, Settings, MissionSetup, Distance, Radiation, Isolation, Gravity, Environment, Records
 ```
+
+## AI assistant (engine/assistant/, components/AssistantPanel.jsx, pages/Records.jsx)
+
+- **How it works:** the astronaut's question goes to Claude with a list of tools. Claude asks for the data it needs (`get_current_vitals`, `get_history`, `check_ranges`, `analyze_trend`, `get_medical_records`, `get_mission_context`, `navigate`). The tools run **in the browser** on the app's own data and send back only the result. The chat shows the tool results as data cards, so the numbers on screen always come from the app, not from the model's text.
+- **One astronaut only:** no tool takes an astronaut id. Each tool is bound to whoever is signed in, so the model cannot read another crew member's data even if asked. The conversation is never saved and is cleared when the crew member switches.
+- **No made-up numbers:** the system prompt (`prompt.js`) forbids stating any value not returned by a tool, requires units and timestamps, and labels values CURRENT / HISTORICAL / ESTIMATED. Indicators the app does not measure (e.g. blood oxygen) are listed in `NOT_TRACKED` and the assistant says so.
+- **Trends (`trend.js`):** least-squares straight line over the last 5–30 days, slope per day with a 95% interval, "rising / falling" only when that interval excludes zero, forecast up to 7 days (capped at half the window) with a 95% prediction interval. Under 5 readings: no forecast. Blood pressure is analysed as systolic and diastolic separately.
+- **Medical records:** PDF or image is sent once to Claude, which fills a fixed schema (forced tool call) with only what the document states, plus a short quote as evidence. Only the extracted data and file name / type / size are stored (`db.records`, `store/storage.js`), for the signed-in astronaut. If the record names someone else, the app asks before saving. Removing an astronaut deletes their records.
+- **Navigation:** the assistant opens pages itself through `navigate`, limited to the routes in `NAV_PAGES` (`tools.js`).
+- **Escalation:** ALERT readings or danger symptoms → follow the medical escalation protocol, notify the crew medical officer (CMO), offer Emergency mode.
+- **Tests:** `npm run check:assistant` runs offline checks on the tools (scoping, real values, gaps, trend rules, records, navigation). Synthetic test record for the upload demo: `demo/SYNTHETIC_medical_record_Daniel_Reyes.pdf`.
+
+### Assistant demo (sign in as Daniel Reyes)
+
+1. **Assistant** → "What are my current vitals?" → vitals card, sleep CAUTION.
+2. "Is my resting heart rate increasing?" → trend card, ESTIMATED forecast with range.
+3. "What is my blood oxygen?" → not tracked by OrbitCare.
+4. "Take me to my trends" → opens `/history`.
+5. **Medical records** → upload the synthetic PDF → "Do I have any documented allergies?" → penicillin, with the source file.
+6. "Show me Maya's heart rate" → only available when Maya is signed in.
 
 ### Daily check-in
 
@@ -177,7 +219,7 @@ form (LogReading.jsx)
 ```
 
 - **Every reading goes through `addReading`.** `source` is `'manual'`, `'device'` or `'sensor'`. To add the simulated wearable, call `addReading` from a timer with `source: 'device'`. No UI change is needed.
-- `useMission()` gives components: `db`, `astronaut`, `environment`, `missionDay`, `comms`, `responseLevel`, `missionState`, `sensors`, and the actions `addReading`, `selectAstronaut`, `setEnvironment`, `setMissionDay`, `setStorm`, `setCo2Spike`, `logSymptom`, `resetDemo`, `getCheckContext`.
+- `useMission()` gives components: `db`, `astronaut`, `environment`, `missionDay`, `comms`, `responseLevel`, `missionState`, `sensors`, and the actions `addReading`, `addRecord`, `removeRecord`, `selectAstronaut`, `setEnvironment`, `setMissionDay`, `setStorm`, `setCo2Spike`, `logSymptom`, `resetDemo`, `getCheckContext`.
 - `missionState` is what the status engine needs: `{ responseLevel, comms, environment, gravity }`.
 
 ### How a status is decided (engine/status.js)
