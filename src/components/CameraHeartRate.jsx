@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { estimateBpm } from '../engine/ppg.js'
+import { BTN, BTN_PRIMARY, LABEL } from './ui.js'
 
 // Camera heart-rate estimate. Video is read on this device only: nothing is saved or sent,
 // and the camera stops when the measurement ends. Usage: <CameraHeartRate onUse={(bpm) => ...} />
@@ -118,20 +119,20 @@ export default function CameraHeartRate({ onUse }) {
   }
 
   const secondsLeft = Math.max(0, Math.ceil((DURATION_MS * (100 - pct)) / 100 / 1000))
-  const primary = 'rounded border border-sky-400/60 bg-sky-400/10 px-3 py-2 text-sky-200 hover:bg-sky-400/20'
-  const secondary = 'rounded border border-white/20 px-3 py-2 text-slate-200 hover:bg-white/10'
+  const primary = BTN_PRIMARY
+  const secondary = BTN
 
   return (
-    <section className="rounded border border-white/15 bg-black/30 p-3 text-sm text-slate-200" aria-label="Camera heart rate">
+    <section className="rounded border border-oc-border/70 bg-oc-bg/60 p-4 text-white" aria-label="Camera heart rate">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-semibold tracking-wide">Camera heart rate</h3>
-        <span className="rounded-sm border border-white/20 px-1.5 py-0.5 text-xs text-slate-300">ESTIMATE</span>
+        <h3 className={LABEL}>Camera heart rate</h3>
+        <span className="rounded-sm border border-oc-gray/60 px-1.5 py-0.5 text-xs font-semibold tracking-wider text-oc-gray">ESTIMATE</span>
       </div>
 
-      <div className={phase === 'measuring' ? 'relative mx-auto mt-3 aspect-[4/3] w-full max-w-xs overflow-hidden rounded border border-white/15' : 'pointer-events-none fixed left-0 top-0 h-px w-px opacity-0'}>
+      <div className={phase === 'measuring' ? 'relative mx-auto mt-3 aspect-[4/3] w-full max-w-xs overflow-hidden rounded border border-oc-border/70' : 'pointer-events-none fixed left-0 top-0 h-px w-px opacity-0'}>
         <video ref={videoRef} playsInline muted className="h-full w-full object-cover" style={{ transform: 'scaleX(-1)' }} />
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-[35%] top-[13%] h-[20%] w-[30%] rounded-sm border border-sky-300/80" />
+          <div className="absolute left-[35%] top-[13%] h-[20%] w-[30%] rounded-sm border border-oc-blue" />
           <div className="absolute left-[25%] top-[6%] h-[88%] w-[50%] rounded-[50%] border border-white/30" />
         </div>
       </div>
@@ -139,15 +140,15 @@ export default function CameraHeartRate({ onUse }) {
       {phase === 'idle' && (
         <div className="mt-3 space-y-3">
           <p>Face a light. Sit still for 20 seconds. Keep your forehead inside the box.</p>
-          <p className="text-xs text-slate-400">Video stays on this device. Nothing is saved or sent.</p>
+          <p className="text-sm text-oc-gray">Video stays on this device. Nothing is saved or sent.</p>
           <button type="button" className={primary} onClick={start}>Start</button>
         </div>
       )}
 
       {phase === 'measuring' && (
         <div className="mt-3 space-y-3">
-          <div className="h-1.5 w-full overflow-hidden rounded-sm bg-white/10">
-            <div className="h-full bg-sky-400" style={{ width: pct + '%' }} />
+          <div className="h-1.5 w-full overflow-hidden rounded-sm bg-oc-panel">
+            <div className="h-full bg-oc-blue" style={{ width: pct + '%' }} />
           </div>
           <p role="status">Hold still. {secondsLeft} s left.</p>
           <button type="button" className={secondary} onClick={() => { stop(); setPhase('idle') }}>Cancel</button>
@@ -156,9 +157,9 @@ export default function CameraHeartRate({ onUse }) {
 
       {phase === 'done' && result && (
         <div className="mt-3 space-y-3">
-          <p className="font-mono text-3xl">{result.bpm} <span className="text-base text-slate-400">bpm</span></p>
+          <p className="font-mono text-4xl font-medium">{result.bpm} <span className="text-base text-oc-gray">bpm</span></p>
           <p>Signal: {result.quality === 'good' ? 'Good' : 'Fair'}</p>
-          <p className="text-xs text-slate-400">Camera estimate. Confirm with a manual count before acting on a red result.</p>
+          <p className="text-sm text-oc-gray">Camera estimate. Confirm with a manual count before acting on a red result.</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" className={primary} onClick={() => onUse && onUse(result.bpm)}>Use this value</button>
             <button type="button" className={secondary} onClick={start}>Measure again</button>

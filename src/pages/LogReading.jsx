@@ -1,6 +1,6 @@
-import CameraHeartRate from '../components/CameraHeartRate.jsx'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import CameraHeartRate from '../components/CameraHeartRate.jsx'
 import { StatusPill } from '../components/StatusPill.jsx'
 import PageTitle from '../components/PageTitle.jsx'
 import { BTN, BTN_DANGER, BTN_PRIMARY, CARD, INPUT, LABEL, STATUS } from '../components/ui.js'
@@ -93,6 +93,7 @@ export default function LogReading() {
   const [fields, setFields] = useState(emptyFields)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(null) // { type, value, status }
+  const [cameraBpm, setCameraBpm] = useState(null) // last camera estimate placed in the field
 
   const set = (name) => (eventOrValue) => {
     const value = eventOrValue?.target ? eventOrValue.target.value : eventOrValue
@@ -114,11 +115,14 @@ export default function LogReading() {
       return
     }
     // Every reading goes through addReading (see store/storage.js).
-    addReading({ astronautId: astronaut.id, type, value: built.value, source: 'manual', extra: built.extra })
+    // A camera estimate saved unchanged is stored as source 'device'.
+    const source = type === 'heartRate' && cameraBpm !== null && built.value === cameraBpm ? 'device' : 'manual'
+    addReading({ astronautId: astronaut.id, type, value: built.value, source, extra: built.extra })
     const status = getStatus(type, built.value, astronaut, missionState)
     setSaved({ type, value: built.value, status })
     setError('')
     setFields(emptyFields)
+    setCameraBpm(null)
   }
 
   const def = THRESHOLDS[type]
@@ -139,7 +143,7 @@ export default function LogReading() {
           </button>
         ))}
       </div>
-      <CameraHeartRate onUse={(bpm) => alert('Heart rate: ' + bpm)} />
+
       <form onSubmit={submit} className={`${CARD} space-y-5`}>
         <div className="flex items-baseline justify-between">
           <h2 className="text-xl font-bold uppercase tracking-wider text-white">{def.label}</h2>
@@ -151,6 +155,16 @@ export default function LogReading() {
             <span className={LABEL}>Beats per minute (bpm)</span>
             <input className={`${INPUT} mt-1`} inputMode="numeric" placeholder="e.g. 62" value={fields.heartRate} onChange={set('heartRate')} autoFocus />
           </label>
+        )}
+
+        {type === 'heartRate' && (
+          <CameraHeartRate
+            onUse={(bpm) => {
+              setFields((prev) => ({ ...prev, heartRate: String(bpm) }))
+              setCameraBpm(bpm)
+              setError('')
+            }}
+          />
         )}
 
         {type === 'bloodPressure' && (

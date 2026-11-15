@@ -51,6 +51,7 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 |---|---|
 | Crew profiles (4 preset astronauts with Earth baselines) | first screen, `/profile` |
 | Log 6 indicators by hand | `/log` |
+| Camera heart-rate estimate (on-device, nothing saved or sent) | `/log`, Heart rate |
 | Green / yellow / red status + plain sentence + next step | dashboard, log result |
 | Daily check-in: old readings show as DUE, with today's progress | dashboard |
 | How-to-measure guides | `/guides` |
@@ -69,6 +70,8 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | Trend charts with colored range bands | `/history` |
 | **AI health assistant** (chat: current vitals, history, range check, trend + forecast, records, opens pages) | **Assistant** button in the top bar, every page |
 | **Medical records**: upload PDF / image, AI extracts conditions, medications, allergies, labs, exams | `/records` |
+| **Memory bank**: messages from home (text, photo, audio, video), family drop countdown, NEW tags, "Add from home" uploads (IndexedDB, offline) | `/isolation` |
+| Low mood 3 check-ins in a row → "A message from home is waiting" card | dashboard, low-mood symptom result |
 
 ### Routes
 
@@ -114,12 +117,14 @@ src/
     alarm.js               getRedConditions(): everything that should sound the master alarm
     responseLevel.js       delay to Earth and the four response levels
     symptomRunner.js       data checks + tree walking for the symptom checker
+    memoryBank.js          memory bank: arrived / pending messages, next family drop, NEW tag
     sensors.js             simulated sensor loop
     spaceWeather.js        live NASA DONKI fetch (FLR / SEP / GST / notifications), fallback mirror,
                            cache, status summary, "does it matter here" per location
     seed.js                30-day demo data
     report.js              builds the "Report to Ground" text
     time.js                date helpers
+    ppg.js                 estimateBpm(): heart rate from camera brightness samples
     assistant/             AI health assistant (see "AI assistant" below)
       tools.js             the tools the model can call, bound to the signed-in astronaut; NAV_PAGES
       trend.js             least-squares trend + 95% forecast interval
@@ -130,6 +135,7 @@ src/
     storage.js             the only file that touches localStorage. addReading() and the
                            preferences section (loadPreferences / savePreferences) live here.
     MissionContext.jsx     global mission state. Components call useMission().
+    memoryUploads.js       "Add from home" photos / audio / video in IndexedDB (idb-keyval)
     PreferencesContext.jsx theme, temperature unit, alert sound, presenter button. usePreferences().
     SpaceWeatherContext.jsx live NASA space weather for every page, refreshed every 10 min. useSpaceWeather().
 
@@ -143,6 +149,7 @@ src/
     StatusPill.jsx         OK / CAUTION / ALERT / DUE label, and RIDGE hazard tags
     HabitatPanel.jsx       live sensor list
     TreeRunner.jsx         runs any symptom tree
+    MemoryBank.jsx         memory bank on the Isolation page: countdown, message cards, full view, Add from home
     TrendChart.jsx         line chart with colored bands
     HazardPage.jsx         frame for a RIDGE hazard page (letter, title, intro)
     motion.jsx             useAnimationsEnabled(), StaggerItem, Collapse (all animation goes through here)
@@ -153,6 +160,7 @@ src/
     StreakToast.jsx        "Check-in complete · N-day streak" toast
     AssistantPanel.jsx     AI assistant chat drawer (opened from the top bar)
     AssistantCards.jsx     data cards in the chat (vitals, ranges, history, trend), drawn from app data
+    CameraHeartRate.jsx    camera heart-rate estimate panel on the Heart rate form
     ui.js                  shared Tailwind class strings and status colors
 
   pages/                   one file per screen
@@ -179,6 +187,16 @@ src/
 4. "Take me to my trends" → opens `/history`.
 5. **Medical records** → upload the synthetic PDF → "Do I have any documented allergies?" → penicillin, with the source file.
 6. "Show me Maya's heart rate" → only available when Maya is signed in.
+
+### Camera heart rate (components/CameraHeartRate.jsx, engine/ppg.js)
+
+- **Where:** Log a Reading → Heart rate, under the bpm field.
+- **How it works:** the front camera films the face for 20 s. Each frame, the app reads the average green value inside the forehead box (blood flow changes skin colour slightly with each beat). `estimateBpm()` filters that signal and finds the strongest rhythm between 42 and 180 bpm. Signal quality Good / Fair is shown; a weak signal gives no number and asks to retry.
+- **Privacy and offline:** video is analysed in the browser only. No frames are saved or sent, and the camera turns off when the measurement ends or is cancelled.
+- **Saving:** **Use this value** fills the bpm field. The astronaut still presses **Save reading**. A camera value saved unchanged is stored with `source: 'device'`; an edited value is `'manual'`. Status, thresholds and the Master Alarm work as for any reading.
+- **Labelled ESTIMATE:** "Confirm with a manual count before acting on a red result."
+- **Needs:** a camera, browser permission, and a secure page (`localhost` or `https`). Opening the dev server from another device by IP address over plain `http` blocks the camera.
+- **Demo:** Log a Reading → Heart rate → Start → face a light, sit still 20 s → Use this value → Save reading.
 
 ### Daily check-in
 
@@ -359,10 +377,10 @@ These lists used to show inside the app ("Not built yet" boxes). They live here 
 - [ ] Pitch only: each astronaut's lifetime dose tracked against the career limit
 
 **Isolation (`pages/Isolation.jsx`)**
-- [ ] Memory bank: family photos, video and voice messages, with a new drop every month
-- [ ] Countdown to the next family drop
-- [ ] When mood is low for several days, suggest opening the memory bank and talking to the crew or ground
-- [ ] The memory bank is always open. Never lock it behind health tasks
+- [x] Memory bank: family photos, video and voice messages, delivered in family drops
+- [x] Countdown to the next family drop (shows when a message has a dropDay after the current mission day; all demo messages have already arrived)
+- [x] When mood is low for 3 check-ins, the dashboard suggests opening the memory bank (pick Aiko Tanaka to see it)
+- [x] The memory bank is always open. Never locked behind health tasks
 - [ ] Pitch only: private journal
 
 **Gravity (`pages/Gravity.jsx`)**
@@ -389,6 +407,6 @@ These lists used to show inside the app ("Not built yet" boxes). They live here 
 - [ ] Measurement reminders on a schedule (the dashboard already shows which checks are due).
 - [ ] Sensor history. Sensors only keep their current value, so the app cannot yet say "high for 6 hours".
 - [ ] Crew alert is only a banner in Emergency mode. Nothing is sent to other profiles.
-- [ ] Body map, streaks and points, camera input.
+- [ ] Body map, streaks and points.
 - [ ] The mood questions (stress, energy, loneliness) are saved in `reading.extra` but nothing uses them yet.
 - [ ] Phone layout. The app is built for a laptop screen.
