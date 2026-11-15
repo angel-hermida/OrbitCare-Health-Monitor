@@ -1,10 +1,10 @@
-# AstroHealth
+# OrbitCare
 
 Health monitoring software for astronauts. NASA Space Apps Challenge 2026.
 
 An offline-first web app that helps astronauts check their own health, understand each reading in plain language, and know what to do next, on a space station, a spacecraft, the Moon or Mars. It is organised around NASA's five hazards of human spaceflight (RIDGE): Radiation, Isolation, Distance, Gravity, Environment.
 
-"AstroHealth" is a placeholder name. To rename it, change `index.html`, `src/components/Layout.jsx` and `src/pages/CrewPicker.jsx`.
+"OrbitCare" is a placeholder name. To rename it, change `index.html`, `src/components/Layout.jsx` and `src/pages/CrewPicker.jsx`.
 
 ## Run it
 
