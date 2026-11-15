@@ -7,6 +7,7 @@ import { ENVIRONMENTS } from '../data/environments.js'
 import { getComms, getResponseLevel } from '../engine/responseLevel.js'
 import { INITIAL_SENSORS, SENSOR_TICK_MS, stepSensors } from '../engine/sensors.js'
 import { createSeedDb } from '../engine/seed.js'
+import { usePreferences } from './PreferencesContext.jsx'
 import {
   addAstronaut as addAstronautToDb,
   addReading as addReadingToDb,
@@ -25,6 +26,8 @@ const MissionContext = createContext(null)
 export function MissionProvider({ children }) {
   // First load: use saved data, or create the 30-day demo history.
   const [db, setDb] = useState(() => loadDb() || createSeedDb())
+  // The Animations preference (Settings), passed through so useMission() can expose it too.
+  const { animations: animationsPreference } = usePreferences()
   const [sensors, setSensors] = useState(INITIAL_SENSORS)
 
   // Save every change.
@@ -137,6 +140,7 @@ export function MissionProvider({ children }) {
   )
 
   const value = {
+    animationsPreference, // Settings > Animations. Components should use useAnimationsEnabled() (also checks reduced motion).
     db,
     astronaut,
     crew,

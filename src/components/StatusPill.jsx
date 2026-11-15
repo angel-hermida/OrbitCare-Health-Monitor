@@ -1,10 +1,12 @@
 import { HAZARDS } from '../data/hazards.js'
 import { STATUS } from './ui.js'
 
-// Status pill (style guide section 7): OK / CAUTION / ALERT / NO DATA.
-export function StatusPill({ level }) {
+// Status pill (style guide section 7): OK / CAUTION / ALERT / NO DATA / DUE.
+// size="lg" is the larger pill used on the dashboard vital cards.
+export function StatusPill({ level, size = 'md' }) {
   const style = STATUS[level] || STATUS.none
-  return <span className={`inline-block shrink-0 rounded-full px-3.5 py-1 text-xs font-bold tracking-wider ${style.solid}`}>{style.word}</span>
+  const sizing = size === 'lg' ? 'min-w-[4.5rem] px-5 py-1.5 text-sm' : 'px-3.5 py-1 text-xs'
+  return <span className={`inline-block shrink-0 rounded-full text-center font-bold tracking-wider transition-colors duration-200 ${sizing} ${style.solid}`}>{style.word}</span>
 }
 
 // Gray tag for anything driven by the simulated sensors or the Presenter panel,

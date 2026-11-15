@@ -92,7 +92,7 @@ export function advanceDay(db, maxMissionDay = Infinity) {
 // ---------- Preferences ----------
 // Display choices, kept apart from the mission db so "Reset demo data" never clears them,
 // and so data saved before preferences existed keeps working (missing fields use the defaults).
-//   { theme: 'dark' | 'light', tempUnit: 'C' | 'F', alertSound: boolean, presenterVisible: boolean }
+//   { theme: 'dark' | 'light', tempUnit: 'C' | 'F', alertSound: boolean, presenterVisible: boolean, animations: boolean }
 
 const PREFS_KEY = 'orbitcare.preferences.v1'
 
@@ -101,6 +101,7 @@ export const DEFAULT_PREFERENCES = {
   tempUnit: 'C',
   alertSound: true,
   presenterVisible: true,
+  animations: true, // page transitions, startup screen, micro-animations (see components/motion.jsx)
 }
 
 export function loadPreferences() {

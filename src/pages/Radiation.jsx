@@ -1,4 +1,6 @@
+import { AnimatePresence } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { Collapse } from '../components/motion.jsx'
 import { Link } from 'react-router-dom'
 import HazardPage from '../components/HazardPage.jsx'
 import { SimulatedTag, StatusPill } from '../components/StatusPill.jsx'
@@ -136,7 +138,9 @@ function EventRow({ event, relevance, open, onToggle }) {
           ›
         </span>
       </button>
+      <AnimatePresence initial={false}>
       {open && (
+        <Collapse key="details">
         <div className="space-y-1 pb-3 pl-6 text-sm">
           <p className="text-white/90">{event.meaning}</p>
           <p className="text-oc-gray">
@@ -152,7 +156,9 @@ function EventRow({ event, relevance, open, onToggle }) {
             )}
           </p>
         </div>
+        </Collapse>
       )}
+      </AnimatePresence>
     </li>
   )
 }
@@ -271,7 +277,9 @@ function ShelterCard({ level, causes, environment, crew }) {
       </p>
 
       {/* SHELTER: what to do now (the full shelter instruction is the first step) */}
+      <AnimatePresence initial={false}>
       {isAlert && (
+        <Collapse key="shelter-steps">
         <div className="mt-5 grid gap-6 border-t border-oc-alert/40 pt-5 md:grid-cols-[3fr_2fr]">
           <div>
             <p className={`${LABEL} text-white`}>Steps</p>
@@ -303,7 +311,9 @@ function ShelterCard({ level, causes, environment, crew }) {
             </Link>
           </div>
         </div>
+        </Collapse>
       )}
+      </AnimatePresence>
 
       {level !== 'green' && causes.length > 0 && <p className="mt-4 text-sm text-oc-gray">Cause: {causes.join(' and ')}</p>}
     </section>

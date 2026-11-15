@@ -1,4 +1,6 @@
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { DURATION, EASE_OUT, useAnimationsEnabled } from './motion.jsx'
 import { formatDelay } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { usePreferences } from '../store/PreferencesContext.jsx'
@@ -13,6 +15,7 @@ export default function PresenterPanel() {
   const [open, setOpen] = useState(false) // lives in Layout, so it stays open while navigating
   const [confirmReset, setConfirmReset] = useState(false)
   const [dayMessage, setDayMessage] = useState('')
+  const animate = useAnimationsEnabled()
 
   useEffect(() => {
     function onKey(event) {
@@ -30,8 +33,16 @@ export default function PresenterPanel() {
 
   return (
     <div className="fixed right-5 bottom-5 z-30 flex flex-col items-end gap-3">
+      <AnimatePresence initial={false}>
       {open && (
-        <section className="w-[22rem] rounded border border-oc-border bg-oc-bg p-4 text-white shadow-2xl shadow-black/40" aria-label="Presenter panel">
+        <motion.section
+          key="presenter-panel"
+          className="w-[22rem] origin-bottom-right rounded border border-oc-border bg-oc-bg p-4 text-white shadow-2xl shadow-black/40"
+          aria-label="Presenter panel"
+          initial={animate ? { opacity: 0, y: 8 } : false}
+          animate={{ opacity: 1, y: 0, transition: { duration: animate ? DURATION.open : 0, ease: EASE_OUT } }}
+          exit={{ opacity: 0, y: 8, transition: { duration: animate ? DURATION.open : 0 } }}
+        >
           <div className="flex items-center justify-between">
             <p className={`${LABEL} text-white`}>Presenter</p>
             <button
@@ -132,8 +143,9 @@ export default function PresenterPanel() {
           </div>
 
           <p className="mt-3 text-xs text-oc-gray">Presenter tools for demonstrating the app. Shift+P hides this button.</p>
-        </section>
+        </motion.section>
       )}
+      </AnimatePresence>
 
       <button
         onClick={() => setOpen((v) => !v)}

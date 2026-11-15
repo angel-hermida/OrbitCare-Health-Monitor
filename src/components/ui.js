@@ -8,13 +8,16 @@
 export const CARD = 'rounded border border-oc-border/70 bg-oc-panel/25 p-5'
 
 // Buttons (style guide section 6).
-const BTN_BASE = 'inline-flex items-center justify-center gap-2 rounded px-5 py-2.5 text-sm font-bold uppercase tracking-wider cursor-pointer transition-colors'
+// Hover = colour change, press = slight shrink (both off with Animations: Off / reduced motion via index.css).
+const BTN_BASE = 'inline-flex items-center justify-center gap-2 rounded px-5 py-2.5 text-sm font-bold uppercase tracking-wider cursor-pointer transition duration-150 active:scale-[0.97]'
 export const BTN_PRIMARY = `${BTN_BASE} bg-oc-blue text-oc-paper hover:bg-oc-blue/85`
 export const BTN = `${BTN_BASE} bg-white text-oc-bg hover:bg-oc-gray` // secondary
 export const BTN_OUTLINE = `${BTN_BASE} border-2 border-white text-white hover:bg-white/10`
 export const BTN_DANGER = `${BTN_BASE} bg-oc-alert text-oc-paper hover:bg-oc-alert/85`
 
+// INPUT: numbers (DM Mono). INPUT_TEXT: words such as names and notes (Inter).
 export const INPUT = 'w-full rounded border border-oc-border bg-oc-bg px-3 py-2 font-mono text-lg text-white placeholder:text-oc-gray/60 focus:border-oc-blue focus:outline-none'
+export const INPUT_TEXT = 'w-full rounded border border-oc-border bg-oc-bg px-3 py-2 font-sans text-base text-white placeholder:text-oc-gray/70 focus:border-oc-blue focus:outline-none'
 
 // Typography (style guide section 2).
 export const H1 = 'text-3xl font-bold text-white'

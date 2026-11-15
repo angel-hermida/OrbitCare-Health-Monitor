@@ -1,6 +1,10 @@
+import { AnimatePresence, motion } from 'motion/react'
+import { useCallback, useRef, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
+import { DURATION, useAnimationsEnabled } from './components/motion.jsx'
 import RadiationAlertSound from './components/RadiationAlertSound.jsx'
+import StartupScreen from './components/StartupScreen.jsx'
 import CrewPicker from './pages/CrewPicker.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Distance from './pages/Distance.jsx'
@@ -19,17 +23,59 @@ import SymptomChecker from './pages/SymptomChecker.jsx'
 import { useMission } from './store/MissionContext.jsx'
 import { SpaceWeatherProvider } from './store/SpaceWeatherContext.jsx'
 
-export default function App() {
-  const { astronaut } = useMission()
+const STARTUP_KEY = 'orbitcare.startupShown' // sessionStorage: once per browser session
 
-  // Nobody selected yet: pick a crew member first.
-  if (!astronaut) return <CrewPicker />
+function startupAlreadyShown() {
+  try {
+    return sessionStorage.getItem(STARTUP_KEY) === '1'
+  } catch {
+    return true // storage blocked: skip the startup screen rather than show it on every load
+  }
+}
 
+// The crew picker, unchanged inside. When animations are on, a click on a crew card first makes
+// that card grow to 1.03 and brighten for 150 ms, then the original click goes through.
+function CrewPickerWithTransition() {
+  const enabled = useAnimationsEnabled()
+  const passThrough = useRef(false)
+  const pending = useRef(false)
+
+  const onClickCapture = (event) => {
+    if (!enabled || passThrough.current) return
+    const card = event.target.closest('main li button')
+    if (!card || /new astronaut/i.test(card.textContent)) return // "New astronaut" opens its form instantly
+    event.preventDefault()
+    event.stopPropagation()
+    if (pending.current) return
+    pending.current = true
+    card.animate(
+      [
+        { transform: 'scale(1)', filter: 'brightness(1)' },
+        { transform: 'scale(1.03)', filter: 'brightness(1.12)' },
+      ],
+      { duration: 150, easing: 'ease-out', fill: 'forwards' },
+    )
+    setTimeout(() => {
+      passThrough.current = true
+      card.click() // the crew picker's own handler selects the astronaut
+      passThrough.current = false
+      pending.current = false
+    }, 150)
+  }
+
+  return (
+    <div className="h-full" onClickCapture={onClickCapture}>
+      <CrewPicker />
+    </div>
+  )
+}
+
+function MainApp() {
   return (
     <SpaceWeatherProvider>
       <RadiationAlertSound />
       <Routes>
-        {/* Emergency mode takes over the whole screen (no sidebar). */}
+        {/* Emergency mode takes over the whole screen (no sidebar) and opens instantly (no transition). */}
         <Route path="/emergency" element={<Emergency />} />
 
         <Route element={<Layout />}>
@@ -50,5 +96,43 @@ export default function App() {
         </Route>
       </Routes>
     </SpaceWeatherProvider>
+  )
+}
+
+export default function App() {
+  const { astronaut } = useMission()
+  const enabled = useAnimationsEnabled()
+  const [showStartup, setShowStartup] = useState(() => enabled && !startupAlreadyShown())
+
+  const finishStartup = useCallback(() => {
+    try {
+      sessionStorage.setItem(STARTUP_KEY, '1')
+    } catch {
+      // ignore: worst case the startup screen shows again next load
+    }
+    setShowStartup(false)
+  }, [])
+
+  // Nobody selected yet: pick a crew member first.
+  const screen = astronaut ? <MainApp /> : <CrewPickerWithTransition />
+
+  return (
+    <>
+      {/* Crew picker <-> app: fade (150 ms out, 250 ms in). Same tree when animations are off, just instant,
+          so switching the setting never remounts the app. */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={astronaut ? 'app' : 'picker'}
+          className="h-full"
+          initial={enabled ? { opacity: 0 } : false}
+          animate={{ opacity: 1, transition: { duration: enabled ? DURATION.enter : 0 } }}
+          exit={{ opacity: 0, transition: { duration: enabled ? DURATION.exit : 0 } }}
+        >
+          {screen}
+        </motion.div>
+      </AnimatePresence>
+
+      <AnimatePresence>{showStartup && enabled && <StartupScreen key="startup" onDone={finishStartup} />}</AnimatePresence>
+    </>
   )
 }

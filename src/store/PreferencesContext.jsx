@@ -19,6 +19,11 @@ export function PreferencesProvider({ children }) {
     document.documentElement.dataset.theme = prefs.theme
   }, [prefs.theme])
 
+  // <html data-motion="off"> switches off all CSS transitions and animations (see index.css).
+  useEffect(() => {
+    document.documentElement.dataset.motion = prefs.animations ? 'on' : 'off'
+  }, [prefs.animations])
+
   const setPreference = useCallback((key, value) => {
     setPrefs((prev) => ({ ...prev, [key]: value }))
   }, [])

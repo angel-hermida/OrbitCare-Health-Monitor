@@ -120,6 +120,9 @@ src/
     TreeRunner.jsx         runs any symptom tree
     TrendChart.jsx         line chart with colored bands
     HazardPage.jsx         frame for a RIDGE hazard page (letter, title, intro)
+    motion.jsx             useAnimationsEnabled(), StaggerItem, Collapse (all animation goes through here)
+    StartupScreen.jsx      once-per-session startup screen
+    SpaceFrame.jsx         crew-picker style frame for New Crew Profile
     RadiationAlertSound.jsx  beeps once when radiation turns red (if sound is on)
     alertSound.js          the beep (Web Audio API, no files)
     ui.js                  shared Tailwind class strings and status colors
@@ -144,6 +147,18 @@ Saved in `localStorage` under their own key (`orbitcare.preferences.v1`) through
 - **Temperature unit**: display only. Readings, thresholds and the status engine stay in °C; `formatValue` / `formatSensor` take an optional unit.
 - **Alert sound**: a short beep when a newly logged reading is red, and once each time radiation turns red.
 - **Presenter button**: Shift+P shows / hides it.
+- **Animations** (default On): page transitions, startup screen, micro-animations. Also exposed as `useMission().animationsPreference`.
+
+### Animations (motion / Framer Motion)
+
+All motion goes through `components/motion.jsx`. `useAnimationsEnabled()` is the single check: Settings → Animations is On **and** the OS "reduce motion" setting is off. When it is false everything appears instantly; `<html data-motion="off">` and a `prefers-reduced-motion` rule in `index.css` also switch off CSS transitions.
+
+- **Page transitions** (`Layout.jsx`): only the main content animates. Exit = fade out 150 ms; enter = fade in + slide up 8 px, 250 ms ease-out. Sidebar and top bar stay still.
+- **Startup screen** (`StartupScreen.jsx`): once per browser session (`sessionStorage`), about 1.5 s, click or any key skips.
+- **Crew picker → dashboard** (`App.jsx`): the clicked card grows to 1.03 and brightens for 150 ms, then the app fades. `CrewPicker.jsx` itself is unchanged; a wrapper handles the effect.
+- **Micro-animations**: dashboard cards and panels stagger in 40 ms apart (`StaggerItem`), status pills and card borders fade between colours, the check-in bar animates its width, the Presenter panel and expanding rows (Radiation events, shelter steps) slide/fade in 200 ms (`Collapse`), buttons shrink slightly when pressed.
+- **Emergency mode opens instantly**: `/emergency` is outside the animated layout.
+- Every animation is under 300 ms except the startup screen.
 
 ## How data flows
 
