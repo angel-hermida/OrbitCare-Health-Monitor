@@ -36,7 +36,7 @@ export default function Radiation() {
       <section className={CARD}>
         <h2 className={H2}>Where to shelter here</h2>
         <p className="mt-2 text-slate-200">{environment.shelter}</p>
-        <p className="mt-2 text-sm text-slate-400">Try it: Distance page → Demo controls → Trigger solar storm.</p>
+        <p className="mt-2 text-sm text-slate-400">Try it: Presenter panel (bottom right) → Trigger solar storm.</p>
       </section>
     </StubPage>
   )

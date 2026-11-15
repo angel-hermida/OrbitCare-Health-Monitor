@@ -5,6 +5,7 @@ import { EMERGENCIES } from '../data/emergencies.js'
 import { buildReport } from '../engine/report.js'
 import { formatDelay, formatReplyEstimate } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
+import { usePreferences } from '../store/PreferencesContext.jsx'
 
 const BIG_BTN = 'cursor-pointer rounded-xl px-8 py-4 text-xl font-bold'
 
@@ -12,6 +13,7 @@ const BIG_BTN = 'cursor-pointer rounded-xl px-8 py-4 text-xl font-bold'
 export default function Emergency() {
   const mission = useMission()
   const { db, astronaut, environment, comms, responseLevel } = mission
+  const { tempUnit } = usePreferences()
   const [scenario, setScenario] = useState(null)
   const [stepIndex, setStepIndex] = useState(0)
   const [report, setReport] = useState(null)
@@ -29,7 +31,7 @@ export default function Emergency() {
   }
 
   function finish() {
-    setReport(buildReport({ db, astronaut, scenario, stepsDone: steps, mission }))
+    setReport(buildReport({ db, astronaut, scenario, stepsDone: steps, mission, tempUnit }))
   }
 
   async function copyReport() {
@@ -42,7 +44,7 @@ export default function Emergency() {
   }
 
   return (
-    <div className="oc-app min-h-full bg-red-950/40">
+    <div className="oc-app oc-dark min-h-full bg-red-950/40">
       <header className="flex flex-wrap items-center justify-between gap-4 bg-red-600 px-6 py-4">
         <div>
           <p className="text-2xl font-black tracking-wide text-white">EMERGENCY MODE</p>

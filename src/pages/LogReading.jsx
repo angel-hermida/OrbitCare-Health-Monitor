@@ -6,6 +6,8 @@ import { BTN, BTN_DANGER, BTN_PRIMARY, CARD, INPUT, LABEL, STATUS } from '../com
 import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
 import { formatValue, getStatus } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
+import { usePreferences } from '../store/PreferencesContext.jsx'
+import { playAlertBeep } from '../components/alertSound.js'
 
 const EMPTY_FIELDS = {
   heartRate: '',
@@ -83,9 +85,12 @@ function Slider({ label, low, high, value, onChange }) {
 
 export default function LogReading() {
   const { astronaut, missionState, addReading } = useMission()
+  const { tempUnit, alertSound } = usePreferences()
   const [params] = useSearchParams()
   const [type, setType] = useState(INDICATOR_ORDER.includes(params.get('type')) ? params.get('type') : 'heartRate')
-  const [fields, setFields] = useState(EMPTY_FIELDS)
+  // The temperature field starts in the unit chosen in Settings.
+  const emptyFields = { ...EMPTY_FIELDS, tempUnit }
+  const [fields, setFields] = useState(emptyFields)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(null) // { type, value, status }
 
@@ -110,9 +115,11 @@ export default function LogReading() {
     }
     // Every reading goes through addReading (see store/storage.js).
     addReading({ astronautId: astronaut.id, type, value: built.value, source: 'manual', extra: built.extra })
-    setSaved({ type, value: built.value, status: getStatus(type, built.value, astronaut, missionState) })
+    const status = getStatus(type, built.value, astronaut, missionState)
+    setSaved({ type, value: built.value, status })
+    if (status.level === 'red' && alertSound) playAlertBeep()
     setError('')
-    setFields(EMPTY_FIELDS)
+    setFields(emptyFields)
   }
 
   const def = THRESHOLDS[type]
@@ -217,7 +224,7 @@ export default function LogReading() {
             <StatusPill level={saved.status.level} />
             <span className={LABEL}>{THRESHOLDS[saved.type].label} saved</span>
           </div>
-          <p className={`mt-3 font-mono text-4xl font-medium ${STATUS[saved.status.level].text}`}>{formatValue(saved.type, saved.value)}</p>
+          <p className={`mt-3 font-mono text-4xl font-medium ${STATUS[saved.status.level].text}`}>{formatValue(saved.type, saved.value, tempUnit)}</p>
           <p className="mt-3 text-lg text-white">{saved.status.message}</p>
           <p className="mt-2 border-t border-white/20 pt-2 text-white/90">
             <span className="font-semibold text-white">Next step: </span>

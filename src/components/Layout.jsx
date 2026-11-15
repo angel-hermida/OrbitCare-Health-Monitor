@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { formatDelay } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
 import Logo from './Logo.jsx'
+import PresenterPanel from './PresenterPanel.jsx'
 import { BTN_DANGER, LABEL, LEVEL_BADGE } from './ui.js'
 
 // Small line icons for the sidebar (24x24, stroke = currentColor).
@@ -16,9 +17,13 @@ const ICONS = {
   distance: 'M3 12h18M15 6l6 6-6 6M3 6v12',
   gravity: 'M12 3v14M6 11l6 6 6-6M5 21h14',
   environment: 'M4 20c0-8 6-14 16-16-1 10-7 16-15 16M4 20 12 12',
+  mission: 'M5 21V4h12l-2.5 4L17 12H5',
+  settings:
+    'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
   profile: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM4 21c0-4 3.6-6 8-6s8 2 8 6',
 }
 
+// Main groups at the top of the sidebar.
 const NAV = [
   { title: 'Health', links: [
     ['/', 'Dashboard', 'dashboard'],
@@ -27,16 +32,22 @@ const NAV = [
     ['/history', 'Trends', 'trends'],
     ['/guides', 'How to measure', 'guides'],
   ] },
-  { title: 'Hazards (RIDGE)', links: [
+  { title: 'Hazards', links: [
     ['/radiation', 'R · Radiation', 'radiation'],
     ['/isolation', 'I · Isolation', 'isolation'],
-    ['/settings', 'D · Distance', 'distance'],
+    ['/distance', 'D · Distance', 'distance'],
     ['/gravity', 'G · Gravity', 'gravity'],
     ['/environment', 'E · Environment', 'environment'],
   ] },
-  { title: 'Crew', links: [
-    ['/profile', 'My profile', 'profile'],
+  { title: 'Mission', links: [
+    ['/mission', 'Mission setup', 'mission'],
   ] },
+]
+
+// Pinned to the bottom of the sidebar, below a separator line.
+const NAV_BOTTOM = [
+  { title: 'System', links: [['/settings', 'Settings', 'settings']] },
+  { title: 'Crew', links: [['/profile', 'My profile', 'profile']] },
 ]
 
 function Icon({ name }) {
@@ -53,6 +64,20 @@ function navClass({ isActive }) {
   }`
 }
 
+function NavGroup({ group }) {
+  return (
+    <div>
+      <p className={`${LABEL} px-5 pb-2 text-white`}>{group.title}</p>
+      {group.links.map(([to, label, icon]) => (
+        <NavLink key={to} to={to} end={to === '/'} className={navClass}>
+          <Icon name={icon} />
+          {label}
+        </NavLink>
+      ))}
+    </div>
+  )
+}
+
 function Field({ label, children }) {
   return (
     <div className="border-l border-white/30 pl-6">
@@ -63,10 +88,11 @@ function Field({ label, children }) {
 }
 
 // Top bar (style guide section 3): logo, who, where, delay to Earth, response level, emergency button.
+// `oc-dark` keeps it dark in the light theme too.
 function Banner() {
   const { astronaut, environment, missionDay, comms, responseLevel, selectAstronaut } = useMission()
   return (
-    <header className="sticky top-0 z-20 border-b border-oc-blue bg-oc-bg">
+    <header className="oc-dark relative z-20 shrink-0 border-b border-oc-blue bg-oc-bg">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
         <Link to="/" className="pr-2" aria-label="OrbitCare dashboard">
           <Logo className="h-12 text-white" />
@@ -77,17 +103,21 @@ function Banner() {
             switch
           </button>
         </Field>
-        <Field label="Location">
-          {environment.short} – Day {missionDay}
-        </Field>
+        <Link to="/mission" title="Mission setup" className="group -my-1 cursor-pointer rounded py-1 pr-3 hover:bg-oc-panel/60">
+          <Field label="Location">
+            <span className="group-hover:text-oc-blue">
+              {environment.short} – Day {missionDay}
+            </span>
+          </Field>
+        </Link>
         <Field label="Delay to Earth">
           <span className="font-mono">{formatDelay(comms)}</span>
         </Field>
         <div className="ml-auto flex items-center gap-5 border-l border-white/30 pl-6">
           <Link
-            to="/settings"
-            title="Response level"
-            className={`rounded border-2 px-3 py-1 text-sm font-bold uppercase tracking-wider ${LEVEL_BADGE[responseLevel.id]}`}
+            to="/distance"
+            title="Response level: see how it works"
+            className={`rounded border-2 px-3 py-1 text-sm font-bold uppercase tracking-wider hover:opacity-85 ${LEVEL_BADGE[responseLevel.id]}`}
           >
             {responseLevel.label}
           </Link>
@@ -101,30 +131,30 @@ function Banner() {
   )
 }
 
+// The page fills the window: top bar fixed at the top, sidebar and page content scroll separately.
 export default function Layout() {
   return (
-    <div className="oc-app flex min-h-full flex-col">
+    <div className="oc-app flex h-full flex-col">
       <Banner />
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-60 shrink-0 border-r border-oc-border/50 bg-oc-bg py-5">
+        <aside className="flex w-60 shrink-0 flex-col overflow-y-auto border-r border-oc-border/50 bg-oc-bg py-5">
           <nav className="space-y-6">
             {NAV.map((group, i) => (
               <div key={group.title} className={i > 0 ? 'border-t border-oc-border/40 pt-5' : ''}>
-                <p className={`${LABEL} px-5 pb-2 text-white`}>{group.title}</p>
-                {group.links.map(([to, label, icon]) => (
-                  <NavLink key={to} to={to} end={to === '/'} className={navClass}>
-                    <Icon name={icon} />
-                    {label}
-                  </NavLink>
-                ))}
+                <NavGroup group={group} />
               </div>
+            ))}
+          </nav>
+          <nav className="mt-auto space-y-4 border-t border-oc-border/60 pt-5">
+            {NAV_BOTTOM.map((group) => (
+              <NavGroup key={group.title} group={group} />
             ))}
           </nav>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <main className="mx-auto w-full max-w-6xl flex-1 p-6">
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+          <main className="mx-auto w-full max-w-6xl flex-1 p-6 pb-20">
             <Outlet />
           </main>
           <footer className="border-t border-oc-border/50 px-6 py-3 text-center text-sm text-oc-gray">
@@ -132,6 +162,8 @@ export default function Layout() {
           </footer>
         </div>
       </div>
+
+      <PresenterPanel />
     </div>
   )
 }

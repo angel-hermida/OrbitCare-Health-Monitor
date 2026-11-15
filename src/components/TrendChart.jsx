@@ -1,13 +1,17 @@
 import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatDate, formatDateTime } from '../engine/time.js'
+import { usePreferences } from '../store/PreferencesContext.jsx'
 import { CARD } from './ui.js'
 
 // Status colors for the bands (palette in src/index.css), plus chart chrome.
+// Recharts needs real colors (not CSS classes), so the chrome is picked per theme here.
 const COLORS = { green: '#22c55e', yellow: '#facc15', red: '#ef4444' }
 const LINE = '#3ba2ff' // Accent Blue
 const GRID = '#2e6edb' // Border
-const AXIS = '#b0b7c3' // Gray Text
-const PANEL = '#0b1e3a' // Background Navy
+const CHROME = {
+  dark: { axis: '#b0b7c3', panel: '#0b1e3a', text: '#ffffff' },
+  light: { axis: '#4f5b6d', panel: '#ffffff', text: '#0b1e3a' },
+}
 
 // Turn green / yellow ranges into colored background bands that fill the chart.
 function makeBands(ranges, [bottom, top]) {
@@ -29,6 +33,9 @@ function makeBands(ranges, [bottom, top]) {
 //   points: [{ t: timestamp, value: number }]
 //   ranges: { green: [low, high], yellow: [low, high] }
 export default function TrendChart({ title, unit, points, ranges }) {
+  const { theme } = usePreferences()
+  const { axis: AXIS, panel: PANEL, text: TEXT } = CHROME[theme] || CHROME.dark
+
   if (points.length === 0) {
     return (
       <section className={CARD}>
@@ -61,7 +68,7 @@ export default function TrendChart({ title, unit, points, ranges }) {
             <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={formatDate} stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
             <YAxis domain={domain} allowDataOverflow stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
             <Tooltip
-              contentStyle={{ background: PANEL, border: `1px solid ${GRID}`, borderRadius: 4, color: '#ffffff' }}
+              contentStyle={{ background: PANEL, border: `1px solid ${GRID}`, borderRadius: 4, color: TEXT }}
               labelStyle={{ color: AXIS }}
               labelFormatter={formatDateTime}
               formatter={(value) => [`${value} ${unit}`, title]}

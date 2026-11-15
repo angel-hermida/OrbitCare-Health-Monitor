@@ -10,7 +10,8 @@ import { timeAgo } from './time.js'
 
 const DAY = 24 * 60 * 60 * 1000
 
-export function buildReport({ db, astronaut, scenario, stepsDone, mission, now = Date.now() }) {
+// tempUnit ('C' | 'F') only changes how temperatures are written.
+export function buildReport({ db, astronaut, scenario, stepsDone, mission, tempUnit = 'C', now = Date.now() }) {
   const { environment, missionDay, comms, responseLevel, missionState, sensors } = mission
   const lines = []
 
@@ -31,7 +32,7 @@ export function buildReport({ db, astronaut, scenario, stepsDone, mission, now =
       continue
     }
     const status = getStatus(type, reading.value, astronaut, missionState)
-    lines.push(`- ${THRESHOLDS[type].label}: ${formatValue(type, reading.value)} [${status.level.toUpperCase()}] (${timeAgo(reading.timestamp, now)})`)
+    lines.push(`- ${THRESHOLDS[type].label}: ${formatValue(type, reading.value, tempUnit)} [${status.level.toUpperCase()}] (${timeAgo(reading.timestamp, now)})`)
   }
   lines.push('')
 
@@ -44,7 +45,7 @@ export function buildReport({ db, astronaut, scenario, stepsDone, mission, now =
   lines.push('Habitat:')
   for (const key of SENSOR_ORDER) {
     const status = getSensorStatus(key, sensors[key])
-    lines.push(`- ${SENSOR_THRESHOLDS[key].label}: ${formatSensor(key, sensors[key])} [${status.level.toUpperCase()}]`)
+    lines.push(`- ${SENSOR_THRESHOLDS[key].label}: ${formatSensor(key, sensors[key], tempUnit)} [${status.level.toUpperCase()}]`)
   }
   lines.push('')
 

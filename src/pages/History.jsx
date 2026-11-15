@@ -2,8 +2,9 @@ import { useState } from 'react'
 import TrendChart from '../components/TrendChart.jsx'
 import PageTitle from '../components/PageTitle.jsx'
 import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
-import { getIndicatorRanges } from '../engine/status.js'
+import { getIndicatorRanges, toFahrenheit } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
+import { usePreferences } from '../store/PreferencesContext.jsx'
 import { getReadings } from '../store/storage.js'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -13,6 +14,7 @@ const RANGES = [7, 30]
 // at the current response level, so they narrow as the mission moves away from Earth.
 export default function History() {
   const { db, astronaut, responseLevel } = useMission()
+  const { tempUnit } = usePreferences()
   const [days, setDays] = useState(30)
   const since = Date.now() - days * DAY
 
@@ -32,6 +34,16 @@ export default function History() {
           ranges: ranges[part],
         })
       }
+    } else if (type === 'temperature' && tempUnit === 'F') {
+      // Display-only: convert the points and the band limits to °F.
+      const f = (c) => (c == null ? null : Math.round(toFahrenheit(c) * 10) / 10)
+      charts.push({
+        key: type,
+        title: def.label,
+        unit: '°F',
+        points: readings.map((r) => ({ t: r.timestamp, value: f(r.value) })),
+        ranges: { green: ranges.green.map(f), yellow: ranges.yellow.map(f) },
+      })
     } else {
       charts.push({
         key: type,

@@ -5,11 +5,13 @@ import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
 import { formatValue, getStatus } from '../engine/status.js'
 import { timeAgo } from '../engine/time.js'
 import { useMission } from '../store/MissionContext.jsx'
+import { usePreferences } from '../store/PreferencesContext.jsx'
 import { latestReading } from '../store/storage.js'
 
 // Who the astronaut is, and their Earth baseline next to their latest reading.
 export default function Profile() {
   const { db, astronaut, missionState, selectAstronaut } = useMission()
+  const { tempUnit } = usePreferences()
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -56,9 +58,9 @@ export default function Profile() {
               return (
                 <tr key={type}>
                   <td className={TD}>{THRESHOLDS[type].label}</td>
-                  <td className={`${TD} font-mono text-oc-gray`}>{formatValue(type, astronaut.baseline[type])}</td>
+                  <td className={`${TD} font-mono text-oc-gray`}>{formatValue(type, astronaut.baseline[type], tempUnit)}</td>
                   <td className={TD}>
-                    <span className="font-mono">{reading ? formatValue(type, reading.value) : '—'}</span>
+                    <span className="font-mono">{reading ? formatValue(type, reading.value, tempUnit) : '—'}</span>
                     {reading && <span className="block text-xs text-oc-gray">{timeAgo(reading.timestamp)}</span>}
                   </td>
                   <td className={TD}><StatusPill level={status ? status.level : 'none'} /></td>

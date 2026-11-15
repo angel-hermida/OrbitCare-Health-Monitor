@@ -24,6 +24,11 @@
   --color-oc-green: #22c55e; /* Status Green (OK) */
   --color-oc-yellow: #facc15; /* Status Yellow (Caution) */
   --color-oc-alert: #ef4444; /* Status Red (Alert) and the EMERGENCY button */
+
+  /* Fixed in both themes: text on colored buttons and pills. (`text-white` turns navy in light theme.) */
+  --color-oc-navy: #0b1e3a;
+  --color-oc-silver: #b0b7c3;
+  --color-oc-paper: #ffffff;
 }
 
 /* ---------- App shell (every page except the crew picker) ----------
@@ -31,9 +36,20 @@
    Tailwind slate / sky / green / amber scales used by older page code are pointed at
    the OrbitCare palette, and corners are capped at 4px (pills stay round).
    The crew picker sits outside `oc-app`, so none of this reaches it.
-   It lives in the base layer so utility classes on the same element (e.g. Emergency's red tint) still win. */
+   It lives in the base layer so utility classes on the same element (e.g. Emergency's red tint) still win.
+
+   Themes: <html data-theme="dark|light"> is set from Settings (store/PreferencesContext.jsx).
+   - Dark (below) is the default look.
+   - Light swaps the navy and white roles: backgrounds turn white / light gray, text turns navy.
+     Blue, red and the status colors stay the same.
+   - `oc-dark` keeps an element dark in both themes (the top bar, Emergency mode). */
 @layer base {
-.oc-app {
+.oc-app,
+.oc-dark {
+  --color-white: #ffffff;
+  --color-oc-bg: #0b1e3a;
+  --color-oc-panel: #113c7a;
+  --color-oc-gray: #b0b7c3;
   --color-slate-50: #ffffff;
   --color-slate-100: #ffffff;
   --color-slate-200: #ffffff;
@@ -60,8 +76,27 @@
   --radius-lg: 4px;
   --radius-xl: 4px;
   --radius-2xl: 4px;
+  color: var(--color-white);
+}
+
+.oc-app {
   background-color: var(--color-oc-bg);
-  color: #ffffff;
+}
+
+html[data-theme="light"] .oc-app:not(.oc-dark) {
+  --color-white: #0b1e3a; /* "white" text and fills become navy */
+  --color-oc-bg: #ffffff; /* page background */
+  --color-oc-panel: #dce4f0; /* light gray-blue panels */
+  --color-oc-gray: #4f5b6d; /* secondary text, dark enough to read on white */
+  --color-slate-50: #0b1e3a;
+  --color-slate-100: #0b1e3a;
+  --color-slate-200: #0b1e3a;
+  --color-slate-300: #4f5b6d;
+  --color-slate-400: #4f5b6d;
+  --color-slate-500: #4f5b6d;
+  --color-slate-800: #dce4f0;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #ffffff;
 }
 
 .oc-app input[type="range"] {

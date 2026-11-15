@@ -18,7 +18,7 @@ export default function Environment() {
       ]}
     >
       <HabitatPanel />
-      <p className="text-sm text-slate-400">Try it: Distance page → Demo controls → Trigger CO₂ spike, then run the Symptom checker for a headache.</p>
+      <p className="text-sm text-slate-400">Try it: Presenter panel (bottom right) → Trigger CO₂ spike, then run the Symptom checker for a headache.</p>
     </StubPage>
   )
 }

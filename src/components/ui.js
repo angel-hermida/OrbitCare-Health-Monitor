@@ -9,10 +9,10 @@ export const CARD = 'rounded border border-oc-border/70 bg-oc-panel/25 p-5'
 
 // Buttons (style guide section 6).
 const BTN_BASE = 'inline-flex items-center justify-center gap-2 rounded px-5 py-2.5 text-sm font-bold uppercase tracking-wider cursor-pointer transition-colors'
-export const BTN_PRIMARY = `${BTN_BASE} bg-oc-blue text-white hover:bg-oc-blue/85`
+export const BTN_PRIMARY = `${BTN_BASE} bg-oc-blue text-oc-paper hover:bg-oc-blue/85`
 export const BTN = `${BTN_BASE} bg-white text-oc-bg hover:bg-oc-gray` // secondary
 export const BTN_OUTLINE = `${BTN_BASE} border-2 border-white text-white hover:bg-white/10`
-export const BTN_DANGER = `${BTN_BASE} bg-oc-alert text-white hover:bg-oc-alert/85`
+export const BTN_DANGER = `${BTN_BASE} bg-oc-alert text-oc-paper hover:bg-oc-alert/85`
 
 export const INPUT = 'w-full rounded border border-oc-border bg-oc-bg px-3 py-2 font-mono text-lg text-white placeholder:text-oc-gray/60 focus:border-oc-blue focus:outline-none'
 
@@ -30,10 +30,12 @@ export const TD = 'border-t border-oc-border/40 px-4 py-3 text-white'
 
 // Status colors. Each level also has a word, so color is never the only signal.
 export const STATUS = {
-  green: { word: 'OK', text: 'text-oc-green', border: 'border-oc-green/60', bg: 'bg-oc-green/10', solid: 'bg-oc-green text-white', ring: '' },
-  yellow: { word: 'CAUTION', text: 'text-oc-yellow', border: 'border-oc-yellow/70', bg: 'bg-oc-yellow/10', solid: 'bg-oc-yellow text-oc-bg', ring: 'ring-4 ring-oc-yellow' },
-  red: { word: 'ALERT', text: 'text-oc-alert', border: 'border-oc-alert/80', bg: 'bg-oc-alert/10', solid: 'bg-oc-alert text-white', ring: 'ring-4 ring-oc-alert' },
-  none: { word: 'NO DATA', text: 'text-oc-gray', border: 'border-oc-border/70', bg: 'bg-oc-panel/25', solid: 'bg-oc-gray text-oc-bg', ring: '' },
+  green: { word: 'OK', text: 'text-oc-green', border: 'border-oc-green/60', bg: 'bg-oc-green/10', solid: 'bg-oc-green text-oc-paper', ring: '' },
+  yellow: { word: 'CAUTION', text: 'text-oc-yellow', border: 'border-oc-yellow/70', bg: 'bg-oc-yellow/10', solid: 'bg-oc-yellow text-oc-navy', ring: 'ring-4 ring-oc-yellow' },
+  red: { word: 'ALERT', text: 'text-oc-alert', border: 'border-oc-alert/80', bg: 'bg-oc-alert/10', solid: 'bg-oc-alert text-oc-paper', ring: 'ring-4 ring-oc-alert' },
+  none: { word: 'NO DATA', text: 'text-oc-gray', border: 'border-oc-border/70', bg: 'bg-oc-panel/25', solid: 'bg-oc-silver text-oc-navy', ring: '' },
+  // Daily check-in not done yet (see engine/checkin.js). Gray, never OK.
+  due: { word: 'DUE', text: 'text-oc-gray', border: 'border-oc-border/70', bg: 'bg-oc-panel/25', solid: 'bg-oc-silver text-oc-navy', ring: '' },
 }
 
 // Response level badges (keyed by RESPONSE_LEVELS id). Blue only: these are not health status.
