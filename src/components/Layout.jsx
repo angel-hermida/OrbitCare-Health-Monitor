@@ -1,7 +1,10 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { AnimatePresence, motion } from 'motion/react'
+import { useState } from 'react'
+import { Link, NavLink, useLocation, useOutlet } from 'react-router-dom'
 import { formatDelay } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
 import Logo from './Logo.jsx'
+import { DURATION, EASE_OUT, useAnimationsEnabled } from './motion.jsx'
 import PresenterPanel from './PresenterPanel.jsx'
 import { BTN_DANGER, LABEL, LEVEL_BADGE } from './ui.js'
 
@@ -131,6 +134,33 @@ function Banner() {
   )
 }
 
+// Keeps the page that is leaving on screen while it fades out (useOutlet would already show the new one).
+function FrozenOutlet() {
+  const outlet = useOutlet()
+  const [frozen] = useState(outlet)
+  return frozen
+}
+
+// Page transitions: exit = fade out 150 ms; enter = fade in + slide up 8 px, 250 ms, ease-out.
+// Only the main content animates. Instant when animations are off or reduced motion is on.
+function AnimatedOutlet() {
+  const location = useLocation()
+  const enabled = useAnimationsEnabled()
+  // Same tree when off (durations 0), so toggling the setting does not remount the page.
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={enabled ? { opacity: 0, y: 8 } : false}
+        animate={{ opacity: 1, y: 0, transition: { duration: enabled ? DURATION.enter : 0, ease: EASE_OUT } }}
+        exit={{ opacity: 0, transition: { duration: enabled ? DURATION.exit : 0 } }}
+      >
+        <FrozenOutlet />
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 // The page fills the window: top bar fixed at the top, sidebar and page content scroll separately.
 export default function Layout() {
   return (
@@ -154,8 +184,8 @@ export default function Layout() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <main className="mx-auto w-full max-w-6xl flex-1 p-6 pb-20">
-            <Outlet />
+          <main className="w-full max-w-[1600px] flex-1 p-6 pb-20">
+            <AnimatedOutlet />
           </main>
           <footer className="border-t border-oc-border/50 px-6 py-3 text-center text-sm text-oc-gray">
             <span className="font-semibold text-white">OrbitCare</span> — Guidance tool. Does not replace flight surgeons.

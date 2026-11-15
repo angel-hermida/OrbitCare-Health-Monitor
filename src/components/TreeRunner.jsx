@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { formatReplyEstimate } from '../engine/responseLevel.js'
 import { followDataNodes } from '../engine/symptomRunner.js'
 import { useMission } from '../store/MissionContext.jsx'
-import { HazardTags, StatusPill } from './StatusPill.jsx'
+import { HazardTags, SimulatedTag, StatusPill } from './StatusPill.jsx'
 import PageTitle from './PageTitle.jsx'
 import { BTN, BTN_DANGER, BTN_PRIMARY, CARD, LABEL, STATUS } from './ui.js'
 
@@ -48,6 +48,11 @@ export default function TreeRunner({ tree, onRestart }) {
                 <span className={`mt-0.5 w-10 shrink-0 font-mono text-sm font-medium ${step.result ? 'text-oc-blue' : 'text-oc-gray'}`}>{step.result ? 'YES' : 'NO'}</span>
                 <span>
                   <span className="text-white">{step.label}</span>
+                  {step.simulated && (
+                    <span className="ml-2 align-middle">
+                      <SimulatedTag />
+                    </span>
+                  )}
                   {step.kind === 'data' && <span className="block text-sm text-oc-gray">Checked automatically: {step.detail}</span>}
                   {step.kind === 'question' && <span className="block text-sm text-oc-gray">Your answer</span>}
                 </span>

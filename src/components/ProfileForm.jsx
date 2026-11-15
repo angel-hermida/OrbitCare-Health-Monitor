@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { applyOverrides, attentionProfile, bmi, estimateBaseline } from '../engine/personalize.js'
 import { formatValue } from '../engine/status.js'
-import { BTN, BTN_PRIMARY, CARD, H1, H2, INPUT, MUTED } from './ui.js'
+import { BTN_OUTLINE, BTN_PRIMARY, INPUT, INPUT_TEXT, LABEL } from './ui.js'
 
 const splitList = (text) => text.split(',').map((x) => x.trim()).filter(Boolean)
 
@@ -52,7 +52,8 @@ function validate(p) {
 
 // Create or edit an astronaut. Pass `initial` to edit.
 // onSubmit(profile, baselineOverrides) is called with the validated values.
-export default function ProfileForm({ initial, title, submitLabel, onSubmit, onCancel }) {
+// Display only: `accent` = word of the title shown in red, `intro` = line under it, `centered` = large centered heading.
+export default function ProfileForm({ initial, title, accent, intro, centered = false, submitLabel, onSubmit, onCancel }) {
   const editing = Boolean(initial)
   const [f, setF] = useState(() => formFrom(initial))
   const [over, setOver] = useState(() => baselineFrom(initial))
@@ -72,97 +73,137 @@ export default function ProfileForm({ initial, title, submitLabel, onSubmit, onC
   const baseline = valid ? applyOverrides(estimate, over) : null
   const attention = valid ? attentionProfile(profile) : null
 
+  // Labelled input. number = monospace (DM Mono); everything else Inter.
   const field = (label, key, props = {}) => (
     <label className="block">
-      <span className="text-sm text-slate-300">{label}</span>
-      <input className={INPUT} value={f[key]} onChange={set(key)} {...props} />
+      <span className={LABEL}>{label}</span>
+      <input className={`${props.type === 'number' ? INPUT : INPUT_TEXT} mt-1.5`} value={f[key]} onChange={set(key)} {...props} />
     </label>
   )
 
   return (
-    <div className="space-y-5">
-      <h1 className={H1}>{title}</h1>
-      <p className={MUTED}>
-        {editing
-          ? 'Update any detail or baseline. Past readings are kept and rated against the new baseline from now on.'
-          : 'Baselines and attention level are worked out from this profile. You can correct any baseline you already know.'}
-      </p>
-
-      <section className={`${CARD} grid gap-4 sm:grid-cols-2`}>
-        {field('Name', 'name', { placeholder: 'e.g. Jordan Lee' })}
-        {field('Role', 'role')}
-        {field('Age', 'age', { type: 'number', min: 18, max: 90 })}
-        <label className="block">
-          <span className="text-sm text-slate-300">Gender</span>
-          <select className={INPUT} value={f.gender} onChange={set('gender')}>
-            <option>Female</option>
-            <option>Male</option>
-            <option>Other</option>
-          </select>
-        </label>
-        {field('Weight (kg)', 'weightKg', { type: 'number', min: 30, max: 200 })}
-        {field('Height (cm)', 'heightCm', { type: 'number', min: 120, max: 220 })}
-      </section>
-
-      <section className={CARD}>
-        <h2 className={H2}>Medical history (optional)</h2>
-        <p className="mt-1 text-sm text-slate-400">Separate items with commas. Stored only on this device. The AI assistant will use this later.</p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-3">
-          {field('Conditions', 'conditions', { placeholder: 'e.g. asthma' })}
-          {field('Medications', 'medications')}
-          {field('Allergies', 'allergies')}
-        </div>
-        <label className="mt-4 block">
-          <span className="text-sm text-slate-300">Notes</span>
-          <textarea className={INPUT} rows={2} value={f.notes} onChange={set('notes')} />
-        </label>
-      </section>
-
-      {valid && (
-        <section className={CARD}>
-          <h2 className={H2}>Health baselines</h2>
-          <p className="mt-1 text-slate-300">
-            BMI {bmi(profile).toFixed(1)} · Attention level: <span className="font-semibold text-white">{attention.label}</span>
-          </p>
-          {attention.reasons.length > 0 && (
-            <ul className="mt-1 list-disc pl-5 text-sm text-slate-400">
-              {attention.reasons.map((r) => <li key={r}>{r}</li>)}
-            </ul>
-          )}
-          <p className="mt-4 text-sm text-slate-400">
-            {editing ? 'Current Earth baseline. Edit any number.' : 'Earth baseline: estimated from the profile. Type a number to replace an estimate.'}
-          </p>
-          <div className="mt-2 grid gap-3 sm:grid-cols-4">
-            {BASELINE_FIELDS.map(([key, label]) => (
-              <label key={key} className="block">
-                <span className="text-xs text-slate-400">{label}</span>
-                <input
-                  className={INPUT}
-                  type="number"
-                  step="any"
-                  value={over[key] ?? ''}
-                  placeholder={String(key === 'systolic' ? estimate.bloodPressure.systolic : key === 'diastolic' ? estimate.bloodPressure.diastolic : estimate[key])}
-                  onChange={(e) => setOver((prev) => ({ ...prev, [key]: e.target.value }))}
-                />
-              </label>
-            ))}
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-slate-400">Blood pressure baseline: {formatValue('bloodPressure', baseline.bloodPressure)}</span>
-            {editing && (
-              <button className={BTN} onClick={() => setOver({})}>Re-estimate from profile</button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {!valid && f.name !== '' && <p className="text-amber-300">{errors.join(' ')}</p>}
-
-      <div className="flex gap-3">
-        <button className={BTN_PRIMARY} disabled={!valid} onClick={() => onSubmit(profile, over)}>{submitLabel}</button>
-        <button className={BTN} onClick={onCancel}>Cancel</button>
+    <div className="space-y-6">
+      {/* Heading: one red word, one short line */}
+      <div className={centered ? 'text-center' : ''}>
+        <h1 className={`font-extrabold tracking-tight text-white ${centered ? 'text-5xl' : 'text-3xl'}`}>
+          {renderTitle(title, accent)}
+        </h1>
+        <p className={`mt-3 text-oc-gray ${centered ? 'mx-auto max-w-xl text-lg' : ''}`}>
+          {intro ||
+            (editing
+              ? 'Update any detail or baseline. Past readings are kept and rated against the new baseline from now on.'
+              : 'Baselines and attention level are worked out from this profile.')}
+        </p>
       </div>
-      <p className="text-sm text-slate-400">Prototype. Estimates are placeholders, not medical advice.</p>
+
+      <div className="rounded border border-oc-border bg-oc-bg/90 p-6 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-8">
+        <Section title="Identity">
+          <div className="grid gap-5 sm:grid-cols-2">
+            {field('Name', 'name', { placeholder: 'e.g. Jordan Lee' })}
+            {field('Role', 'role', { placeholder: 'e.g. Mission Specialist' })}
+          </div>
+        </Section>
+
+        <Section title="Body">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {field('Age', 'age', { type: 'number', min: 18, max: 90 })}
+            <label className="block">
+              <span className={LABEL}>Gender</span>
+              <select className={`${INPUT_TEXT} mt-1.5`} value={f.gender} onChange={set('gender')}>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+              </select>
+            </label>
+            {field('Weight (kg)', 'weightKg', { type: 'number', min: 30, max: 200 })}
+            {field('Height (cm)', 'heightCm', { type: 'number', min: 120, max: 220 })}
+          </div>
+        </Section>
+
+        <Section title="Medical history (optional)" note="Stored only on this device. Separate items with commas.">
+          <div className="grid gap-5 sm:grid-cols-3">
+            {field('Conditions', 'conditions', { placeholder: 'e.g. asthma' })}
+            {field('Medications', 'medications', { placeholder: 'e.g. none' })}
+            {field('Allergies', 'allergies', { placeholder: 'e.g. penicillin' })}
+          </div>
+          <label className="mt-5 block">
+            <span className={LABEL}>Notes</span>
+            <textarea className={`${INPUT_TEXT} mt-1.5`} rows={2} value={f.notes} onChange={set('notes')} placeholder="Anything the crew medical officer should know" />
+          </label>
+        </Section>
+
+        {valid && (
+          <Section title="Earth baselines" note={editing ? 'Current Earth baseline. Edit any number.' : 'Estimated from the profile. Type a number to replace an estimate.'}>
+            <p className="text-sm text-white/90">
+              BMI <span className="font-mono">{bmi(profile).toFixed(1)}</span> · Attention level: <span className="font-semibold text-white">{attention.label}</span>
+            </p>
+            {attention.reasons.length > 0 && (
+              <ul className="mt-1 list-disc pl-5 text-sm text-oc-gray">
+                {attention.reasons.map((r) => <li key={r}>{r}</li>)}
+              </ul>
+            )}
+            <div className="mt-4 grid gap-4 sm:grid-cols-4">
+              {BASELINE_FIELDS.map(([key, label]) => (
+                <label key={key} className="block">
+                  <span className={`${LABEL} text-[10px] tracking-[0.15em]`}>{label}</span>
+                  <input
+                    className={`${INPUT} mt-1.5`}
+                    type="number"
+                    step="any"
+                    value={over[key] ?? ''}
+                    placeholder={String(key === 'systolic' ? estimate.bloodPressure.systolic : key === 'diastolic' ? estimate.bloodPressure.diastolic : estimate[key])}
+                    onChange={(e) => setOver((prev) => ({ ...prev, [key]: e.target.value }))}
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <span className="text-sm text-oc-gray">
+                Blood pressure baseline: <span className="font-mono">{formatValue('bloodPressure', baseline.bloodPressure)}</span>
+              </span>
+              {editing && (
+                <button className={BTN_OUTLINE} onClick={() => setOver({})}>Re-estimate from profile</button>
+              )}
+            </div>
+          </Section>
+        )}
+
+        {!valid && f.name !== '' && <p className="mb-4 rounded border border-oc-yellow/70 bg-oc-yellow/10 px-3 py-2 text-sm text-white">{errors.join(' ')}</p>}
+
+        <div className="flex flex-wrap justify-end gap-3 border-t border-oc-border/50 pt-6">
+          <button className={BTN_OUTLINE} onClick={onCancel}>Cancel</button>
+          <button className={`${BTN_PRIMARY} disabled:cursor-not-allowed disabled:opacity-50`} disabled={!valid} onClick={() => onSubmit(profile, over)}>
+            {submitLabel}
+          </button>
+        </div>
+        <p className="mt-3 text-right text-xs text-oc-gray">Estimated baselines are approximate and not medical advice.</p>
+      </div>
     </div>
+  )
+}
+
+// Title with one word in red (accent must appear in the title).
+function renderTitle(title, accent) {
+  const i = accent ? title.indexOf(accent) : -1
+  if (i < 0) return title
+  return (
+    <>
+      {title.slice(0, i)}
+      <span className="text-oc-red">{accent}</span>
+      {title.slice(i + accent.length)}
+    </>
+  )
+}
+
+// A titled part of the form panel with a thin underline.
+function Section({ title, note, children }) {
+  return (
+    <section className="mb-8">
+      <div className="mb-4 border-b border-oc-border/60 pb-2">
+        <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-white">{title}</h2>
+        {note && <p className="mt-1 text-xs text-oc-gray">{note}</p>}
+      </div>
+      {children}
+    </section>
   )
 }

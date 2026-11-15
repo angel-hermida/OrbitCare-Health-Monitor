@@ -11,6 +11,9 @@ const LEVEL_RULES = {
   autonomous: 'No link (blackout)',
 }
 
+// How each response level changes the limits, in plain words (index = RESPONSE_LEVELS index).
+const ALERT_TIMING = ['Alerts trigger at standard limits.', 'Alerts trigger earlier.', 'Alerts trigger even earlier.', 'Alerts trigger at the earliest point.']
+
 // The Distance hazard (D in RIDGE), read-only.
 // Location + mission day -> delay to Earth -> response level -> how strict the limits are.
 // Location is changed on Mission setup; mission day in the Presenter panel.
@@ -30,7 +33,7 @@ export default function Distance() {
         <div>
           <p className={LABEL}>Delay to Earth</p>
           <p className="mt-2 font-mono text-4xl font-medium text-white">{formatDelay(comms)}</p>
-          <p className="mt-1 text-oc-gray">{formatReplyEstimate(comms)}</p>
+          <p className="mt-1 text-oc-gray">{responseLevel.id === 'ground' ? 'Reply: near real-time' : formatReplyEstimate(comms)}</p>
           <p className="mt-3 text-sm text-oc-gray">
             {environment.name} · <span className="font-mono">Day {missionDay}</span>
           </p>
@@ -60,7 +63,7 @@ export default function Distance() {
                 </p>
                 <p className="mt-1 text-slate-200">{level.summary}</p>
                 <p className="text-sm text-slate-400">
-                  On a red reading: {level.redInstruction} {level.index === 0 ? 'Limits are at their normal width.' : `Limits are ${level.index} step${level.index > 1 ? 's' : ''} stricter.`}
+                  On a red reading: {level.redInstruction} {ALERT_TIMING[level.index]}
                 </p>
               </li>
             )

@@ -6,6 +6,7 @@ import { buildReport } from '../engine/report.js'
 import { formatDelay, formatReplyEstimate } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { usePreferences } from '../store/PreferencesContext.jsx'
+import { SimulatedTag } from '../components/StatusPill.jsx'
 
 const BIG_BTN = 'cursor-pointer rounded-xl px-8 py-4 text-xl font-bold'
 
@@ -59,7 +60,9 @@ export default function Emergency() {
           <div className="rounded-xl border border-amber-400/60 bg-amber-400/10 p-4">
             <p className="font-bold text-amber-300">Crew alerted</p>
             <p className="text-slate-100">Every crew member has been notified that {astronaut.name} needs help.</p>
-            <p className="mt-1 text-xs text-slate-400">Simulated in this prototype.</p>
+            <p className="mt-2">
+              <SimulatedTag />
+            </p>
           </div>
           <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
             <p className="flex flex-wrap items-center gap-2 font-bold text-white">
@@ -106,7 +109,7 @@ export default function Emergency() {
               )}
               <button className="ml-auto cursor-pointer text-slate-300 underline hover:text-white" onClick={() => setScenario(null)}>Choose a different emergency</button>
             </div>
-            <p className="mt-6 text-xs text-slate-400">Placeholder protocol for the prototype. Not verified medical guidance.</p>
+            <p className="mt-6 text-xs text-slate-400">General first-aid guidance. Not a verified medical protocol.</p>
           </section>
         )}
 

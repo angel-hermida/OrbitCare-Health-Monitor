@@ -36,12 +36,6 @@ export default function CrewPicker() {
           <Logo className="h-14 text-white" />
           <span className="h-10 w-px bg-white/40" aria-hidden="true" />
           <p className="hidden text-xs font-semibold tracking-[0.3em] text-slate-100 md:block">CREW HEALTH &amp; BIOMETRICS PLATFORM</p>
-          <button
-            type="button"
-            className="ml-auto cursor-pointer rounded-lg border-2 border-white/90 px-8 py-2 text-base font-bold tracking-wide text-white hover:bg-white/10"
-          >
-            SIGN UP
-          </button>
         </div>
         <span className="absolute -bottom-[3px] left-0 h-[5px] w-48 bg-red-600" aria-hidden="true" />
       </header>

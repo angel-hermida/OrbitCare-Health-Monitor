@@ -2,6 +2,8 @@
 // This file knows how to (1) answer "data" nodes from app data and (2) walk a tree.
 
 import { SENSOR_THRESHOLDS } from '../data/thresholds.js'
+import { realStormLast24h } from './spaceWeather.js'
+import { timeAgo } from './time.js'
 
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
@@ -38,6 +40,7 @@ function lowMood3d(ctx) {
 export const DATA_CHECKS = {
   co2High: {
     label: 'Cabin CO₂ level',
+    simulated: true, // reads the simulated cabin sensor
     run(ctx) {
       const limit = SENSOR_THRESHOLDS.co2.green[1]
       const value = Math.round(ctx.sensors.co2)
@@ -47,10 +50,20 @@ export const DATA_CHECKS = {
   },
   stormLast24h: {
     label: 'Solar storms in the last 24 hours',
+    // Two sources: real NASA DONKI events (cached by the app, see engine/spaceWeather.js) and the
+    // simulated storm from the Presenter panel. The step is tagged SIMULATED only when the simulated
+    // storm is what triggered it.
     run(ctx) {
-      const recent = ctx.events.some((e) => e.type === 'solarStorm' && ctx.now - e.timestamp < DAY)
-      const found = ctx.sensors.stormActive || recent
-      return { result: found, detail: ctx.sensors.stormActive ? 'A solar storm is active right now.' : recent ? 'There was a solar storm in the last 24 hours.' : 'No solar storm in the last 24 hours.' }
+      const simulatedNow = ctx.sensors.stormActive
+      const simulatedRecent = ctx.events.some((e) => e.type === 'solarStorm' && ctx.now - e.timestamp < DAY)
+      if (simulatedNow || simulatedRecent) {
+        return { result: true, simulated: true, detail: simulatedNow ? 'A simulated solar storm is active right now.' : 'There was a simulated solar storm in the last 24 hours.' }
+      }
+      const real = realStormLast24h(ctx.now)
+      if (real) {
+        return { result: true, simulated: false, detail: `NASA DONKI reported: ${real.title}${real.detail ? ` (${real.detail})` : ''}, ${timeAgo(real.time, ctx.now)}.` }
+      }
+      return { result: false, simulated: false, detail: 'No solar storm in the last 24 hours (NASA DONKI and simulated sensors).' }
     },
   },
   gravityChanged3d: {
@@ -83,8 +96,9 @@ export function followDataNodes(tree, nodeId, ctx) {
     const node = tree.nodes[id]
     const check = DATA_CHECKS[node.check]
     if (!check) throw new Error(`Unknown data check "${node.check}" in symptom tree`)
-    const { result, detail } = check.run(ctx)
-    steps.push({ kind: 'data', label: check.label, detail, result })
+    const { result, detail, simulated } = check.run(ctx)
+    // A check can say per run whether its answer came from simulated data; otherwise use its default.
+    steps.push({ kind: 'data', label: check.label, detail, result, simulated: simulated ?? !!check.simulated })
     id = result ? node.yes : node.no
   }
   return { nodeId: id, steps }

@@ -18,7 +18,7 @@ function Row({ title, description, children }) {
 
 // App preferences. Saved in localStorage through store/storage.js (separate from mission data).
 export default function Settings() {
-  const { theme, tempUnit, alertSound, setPreference } = usePreferences()
+  const { theme, tempUnit, alertSound, animations, setPreference } = usePreferences()
 
   return (
     <div className="max-w-3xl space-y-8">
@@ -29,6 +29,10 @@ export default function Settings() {
         <div className={`${CARD} mt-3 py-1`}>
           <Row title="Theme" description="Light uses white backgrounds with navy text. The top bar stays dark.">
             <Segmented label="Theme" value={theme} options={[['dark', 'Dark'], ['light', 'Light']]} onChange={(v) => setPreference('theme', v)} />
+          </Row>
+          <div className="border-t border-oc-border/40" />
+          <Row title="Animations" description="Page transitions, the startup screen and small motion effects. Off = everything appears instantly.">
+            <Segmented label="Animations" value={animations} options={[[true, 'On'], [false, 'Off']]} onChange={(v) => setPreference('animations', v)} />
           </Row>
         </div>
       </section>

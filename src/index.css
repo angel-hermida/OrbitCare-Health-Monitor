@@ -104,6 +104,25 @@ html[data-theme="light"] .oc-app:not(.oc-dark) {
 }
 }
 
+/* Animations off (Settings) or the OS asks to reduce motion: no CSS transitions or animations. */
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 html,
 body,
 #root {

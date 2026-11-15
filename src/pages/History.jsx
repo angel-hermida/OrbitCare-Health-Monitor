@@ -51,6 +51,8 @@ export default function History() {
         unit: def.unit,
         points: readings.map((r) => ({ t: r.timestamp, value: r.value })),
         ranges,
+        // Mood is a 1-5 scale: show exactly that on the Y axis.
+        fixedDomain: type === 'mood' ? [1, 5] : undefined,
       })
     }
   }
