@@ -17,6 +17,18 @@ Open the link it prints. `npm run build` makes a static site in `dist/` that can
 
 Requires Node 20 or newer.
 
+### NASA API key (optional)
+
+Live space weather on the Radiation page uses the NASA API. Put your key in a file named `.env` next to `package.json`:
+
+```
+VITE_NASA_API_KEY=your-key-here
+```
+
+Get a free key at https://api.nasa.gov. Without one the app uses NASA's shared `DEMO_KEY` (low rate limit), and if api.nasa.gov is unreachable it falls back to the CCMC DONKI mirror, which needs no key. `.env` is in `.gitignore`, so it is never committed. **Restart `npm run dev` after creating or changing `.env`.**
+
+Note: Vite builds `VITE_` variables into the JavaScript, so anyone with the built site can read the key. That is fine for a free NASA key; never put a secret there.
+
 ## Stack
 
 React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data is in `localStorage`. There is no backend and no network call.
@@ -35,8 +47,9 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | Limits get stricter as the response level rises | status engine |
 | Symptom checker (headache is complete, 4 others are stubs) | `/symptoms` |
 | Emergency mode with 5 scenarios and a report to ground | `/emergency` |
-| Simulated cabin + radiation sensors | Habitat panel (dashboard, `/environment`) |
-| Demo controls: mission day, solar storm, CO₂ spike, reset | Presenter panel (button bottom right, Shift+P hides it) |
+| **Live NASA space weather** (flares, particle events, geomagnetic storms, last 30 days) | `/radiation` |
+| Simulated cabin + radiation sensors (labelled SIMULATED) | Habitat panel (dashboard, `/environment`), `/radiation` |
+| Demo controls: mission day, Next day, solar storm, CO₂ spike, reset | Presenter panel (button bottom right, Shift+P hides it) |
 | Theme (dark / light), °C / °F, alert sound | `/settings` |
 | 30 days of demo history | loads on first run, reset from the Presenter panel |
 | Trend charts with colored range bands | `/history` |
@@ -82,6 +95,8 @@ src/
     responseLevel.js       delay to Earth and the four response levels
     symptomRunner.js       data checks + tree walking for the symptom checker
     sensors.js             simulated sensor loop
+    spaceWeather.js        live NASA DONKI fetch (FLR / SEP / GST / notifications), fallback mirror,
+                           cache, status summary, "does it matter here" per location
     seed.js                30-day demo data
     report.js              builds the "Report to Ground" text
     time.js                date helpers
@@ -91,6 +106,7 @@ src/
                            preferences section (loadPreferences / savePreferences) live here.
     MissionContext.jsx     global mission state. Components call useMission().
     PreferencesContext.jsx theme, temperature unit, alert sound, presenter button. usePreferences().
+    SpaceWeatherContext.jsx live NASA space weather for every page, refreshed every 10 min. useSpaceWeather().
 
   components/              reusable UI
     Layout.jsx             sidebar, top bar, emergency button, disclaimer, Presenter panel
@@ -103,7 +119,7 @@ src/
     HabitatPanel.jsx       live sensor list
     TreeRunner.jsx         runs any symptom tree
     TrendChart.jsx         line chart with colored bands
-    StubPage.jsx           frame for pages that are not built yet
+    HazardPage.jsx         frame for a RIDGE hazard page (letter, title, intro)
     RadiationAlertSound.jsx  beeps once when radiation turns red (if sound is on)
     alertSound.js          the beep (Web Audio API, no files)
     ui.js                  shared Tailwind class strings and status colors
@@ -195,9 +211,34 @@ Good moments to show:
 
 1. **E**: Presenter panel → Trigger CO₂ spike → wait about 8 seconds → Symptom checker → Headache. It finds the CO₂ by itself.
 2. **D**: Mission setup → Mars base → Presenter panel → drag the mission day to 390. The top bar switches to "Fully autonomous" and the limits tighten (watch the bands on the Trends page).
-3. **R**: Presenter panel → Trigger solar storm → the Habitat panel turns red with shelter advice for the current location → Emergency → Radiation storm.
-4. **Report**: finish any emergency to see the packaged report and the reply estimate.
-5. **Check-in**: Maya's dashboard → a DUE card → Log now → back to the dashboard: the card turns green and the check-in count goes up.
+3. **R**: Presenter panel → Trigger solar storm → the Habitat panel turns red with shelter advice for the current location → Emergency → Radiation storm. (Simulated, and labelled SIMULATED.)
+4. **R, real data**: Radiation page → "Space weather (NASA)": live status (QUIET / ELEVATED / ACTIVE), a 30-day timeline of real NASA events, and what each one means at the current location. Switch location on Mission setup (ISS → Mars) and watch the "matters here" tags change.
+5. **Report**: finish any emergency to see the packaged report and the reply estimate.
+6. **Check-in**: Maya's dashboard → a DUE card → Log now → back to the dashboard: the card turns green and the check-in count goes up.
+7. **Next day**: Presenter panel → Next day. Mission day goes up by one and every dashboard card shows DUE ("Today's check-in: 0 of 6 done").
+
+### Real vs simulated data
+
+Judges should be able to tell them apart at a glance:
+
+- **Real:** the Space weather (NASA) panel on `/radiation`. Its label reads `LIVE · NASA DONKI · updated X min ago` when it has just fetched, `CACHED · <time>` when NASA cannot be reached (last good data from `localStorage`), or `OFFLINE` if it has never fetched on this device.
+- **Simulated:** the cabin / radiation sensors (Habitat panel, "Radiation right now"), the Presenter panel's solar storm and CO₂ spike, the symptom-checker steps that read them, the Habitat section of the Report to Ground, and the "Crew alerted" box in Emergency mode. Each carries a gray **SIMULATED** tag.
+
+### Live NASA space weather (engine/spaceWeather.js, store/SpaceWeatherContext.jsx)
+
+- Four DONKI feeds for the last 30 days: solar flares (`FLR`), solar energetic particles (`SEP`), geomagnetic storms (`GST`) and NASA's space weather alerts (`notifications`: CMEs, radiation belt enhancements, shocks; weekly reports and auto-generated duplicates are skipped).
+- `SpaceWeatherProvider` (in `App.jsx`) fetches once when the app opens and then every 10 minutes, for every page. Components call `useSpaceWeather()`.
+- `https://api.nasa.gov/DONKI/...` with `VITE_NASA_API_KEY` (or `DEMO_KEY`); falls back to `https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/...` (no key). Each feed is independent: if one fails (e.g. NASA's FLR endpoint was returning 404 in Nov 2026), the others still show as LIVE, the failed feed's last cached events are kept, and the panel says which feed is unavailable.
+- **Status line** (`spaceWeatherSummary`): ACTIVE (X-class flare or particle event in 24 h), ELEVATED (M flare, Kp 5+ storm, particles, or a CME aimed at Earth or Mars in 3 days), or QUIET ("No major events for N days").
+- **30-day timeline**: one marker per event (shape + color by kind, legend with counts, hover for details).
+- **What it means here** (`relevanceAt(event, location)`): each event is tagged *Matters here* / *Some effect here* / *Low impact here* for the crew's current location. Examples: geomagnetic storms and radiation belt alerts matter on the ISS but not on Mars; particle events matter most outside Earth's magnetic field; a CME counts only if NASA predicts it reaches Earth (ISS, Moon) or Mars.
+- **Symptom checker**: the "Solar storms in the last 24 hours" check uses real NASA events (particles, M/X flares, Kp 5+ storms) as well as the Presenter panel's simulated storm. The step is tagged SIMULATED only when the simulated storm triggered it.
+- An X-class flare or particle event in the last 24 hours shows a warning banner with the shelter advice for the current location.
+- Never shows an error screen: on failure it shows the cached result, or an offline note. The crew explanations are OrbitCare's wording, not NASA's; the page says so.
+
+### Next day (Presenter panel)
+
+`advanceDay(db)` in `store/storage.js` (exposed as `useMission().advanceDay`): mission day +1 (capped at the location's maximum), and every stored reading, event and symptom log moves 24 hours into the past. Nothing is deleted, so Trends, Profile and the Report to Ground keep the full history, but every reading is now over a day old, so all daily check-ins are due.
 
 ## Custom astronaut profiles (branch `feature/custom-astronaut-profiles`)
 
@@ -226,12 +267,37 @@ Next: learn baselines from the first week of real readings, let conditions adjus
 - [ ] `data/guides.js`: the space-specific claims.
 - [ ] Blood sugar limits do not separate fasting from after-meal readings.
 
-### Stub pages to build
+### Planned features
 
-- [ ] `pages/Radiation.jsx`: storm alert on every page, shelter checklist by location, crew roll call, all-clear.
-- [ ] `pages/Isolation.jsx`: memory bank, countdown to the next family drop, low-mood suggestion. Always open, never locked behind tasks.
-- [ ] `pages/Gravity.jsx`: animated jump visual, bone-loss meter, exercise log, hydration reminders, landing checklist.
-- [ ] `pages/Environment.jsx`: sensor history, crew illness alert, body clock helper.
+These lists used to show inside the app ("Not built yet" boxes). They live here now so the UI shows only working features.
+
+**Radiation (`pages/Radiation.jsx`)**
+- [ ] Full-screen solar storm alert that appears on every page when radiation turns red
+- [ ] Step-by-step shelter checklist that changes with the location (station, spacecraft, Moon, Mars)
+- [ ] Crew roll call: tick off each crew member as they reach the shelter
+- [ ] All-clear message when the level is back in the green
+- [ ] Pitch only: each astronaut's lifetime dose tracked against the career limit
+
+**Isolation (`pages/Isolation.jsx`)**
+- [ ] Memory bank: family photos, video and voice messages, with a new drop every month
+- [ ] Countdown to the next family drop
+- [ ] When mood is low for several days, suggest opening the memory bank and talking to the crew or ground
+- [ ] The memory bank is always open. Never lock it behind health tasks
+- [ ] Pitch only: private journal
+
+**Gravity (`pages/Gravity.jsx`)**
+- [ ] Jump visual: a figure that jumps higher and lands slower in low gravity (height = Earth jump ÷ gravity)
+- [ ] Bone-loss meter that rises with days in low gravity and slows when exercise is logged
+- [ ] Daily exercise log (needs a new reading type or a separate exercise list in storage)
+- [ ] Hydration reminders
+- [ ] Landing checklist before arriving at Mars or returning to Earth: fluids, balance, readiness
+- [ ] Pitch only: stand-up test (heart rate and blood pressure lying down, then standing)
+
+**Environment (`pages/Environment.jsx`)**
+- [ ] Sensor history: how long each value has been out of range (e.g. "CO₂ has been high for 6 hours")
+- [ ] Crew illness alert: when one person logs a fever, tell everyone to clean shared surfaces and check their temperature
+- [ ] Body clock helper: fixed sleep and wake times with lighting reminders
+- [ ] Pitch only: dust check after surface activity on the Moon or Mars
 
 ### Stub symptom trees to expand
 

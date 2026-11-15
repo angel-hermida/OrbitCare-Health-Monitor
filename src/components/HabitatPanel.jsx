@@ -3,10 +3,10 @@ import { formatSensor, getSensorStatus } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { usePreferences } from '../store/PreferencesContext.jsx'
 import PageTitle from './PageTitle.jsx'
-import { StatusPill } from './StatusPill.jsx'
+import { SimulatedTag, StatusPill } from './StatusPill.jsx'
 import { CARD, LABEL, STATUS } from './ui.js'
 
-// Live (simulated) cabin and radiation sensors.
+// Simulated cabin and radiation sensors (engine/sensors.js). Not real data, and labelled so.
 export default function HabitatPanel() {
   const { sensors, environment } = useMission()
   const { tempUnit } = usePreferences()
@@ -14,7 +14,9 @@ export default function HabitatPanel() {
   return (
     <section className={CARD}>
       <PageTitle title="Habitat" as="h2" size="text-xl" />
-      <p className={`${LABEL} mt-2`}>Simulated sensors · live</p>
+      <p className={`${LABEL} mt-2 flex items-center gap-2`}>
+        <SimulatedTag /> Simulated sensors
+      </p>
 
       <ul className="mt-3 divide-y divide-oc-border/40">
         {SENSOR_ORDER.map((key) => {

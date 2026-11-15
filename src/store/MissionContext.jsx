@@ -17,6 +17,7 @@ import {
   removeAstronaut as removeAstronautFromDb,
   saveDb,
   updateAstronaut as updateAstronautInDb,
+  advanceDay as advanceDayInDb,
 } from './storage.js'
 
 const MissionContext = createContext(null)
@@ -92,6 +93,11 @@ export function MissionProvider({ children }) {
 
   const setMissionDay = useCallback((missionDay) => updateSettings({ missionDay }), [updateSettings])
 
+  // Presenter "Next day": mission day +1 and all history 24 h older, so every check-in is due.
+  const advanceDay = useCallback(() => {
+    setDb((prev) => advanceDayInDb(prev, ENVIRONMENTS[prev.settings.environment]?.maxMissionDay))
+  }, [])
+
   const setStorm = useCallback((active) => {
     setSensors((prev) => ({ ...prev, stormActive: active }))
     if (active) setDb((prev) => ({ ...prev, events: [...prev.events, { type: 'solarStorm', timestamp: Date.now() }] }))
@@ -147,6 +153,7 @@ export function MissionProvider({ children }) {
     removeAstronaut,
     setEnvironment,
     setMissionDay,
+    advanceDay,
     setStorm,
     setCo2Spike,
     logSymptom,

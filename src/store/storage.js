@@ -65,6 +65,30 @@ export function latestReading(db, astronautId, type) {
   return list.length ? list[list.length - 1] : null
 }
 
+// ---------- Demo: jump to the next day ----------
+// Presenter "Next day": mission day +1 (capped at the location's max) and every stored reading,
+// event and symptom log moves 24 hours into the past. Nothing is deleted, so Trends, Profile and the
+// Report to Ground keep the full history, but every reading is now over a day old, so the daily
+// check-in shows all six as due. Returns a new db.
+const HOURS_24 = 24 * 60 * 60 * 1000
+
+export function advanceDay(db, maxMissionDay = Infinity) {
+  const back = (item) => ({ ...item, timestamp: item.timestamp - HOURS_24 })
+  const settings = db.settings
+  return {
+    ...db,
+    readings: db.readings.map(back),
+    events: (db.events ?? []).map(back),
+    symptoms: (db.symptoms ?? []).map(back),
+    settings: {
+      ...settings,
+      missionDay: Math.min(settings.missionDay + 1, maxMissionDay),
+      // keep "days since the gravity changed" consistent with the shifted history
+      environmentChangedAt: settings.environmentChangedAt != null ? settings.environmentChangedAt - HOURS_24 : settings.environmentChangedAt,
+    },
+  }
+}
+
 // ---------- Preferences ----------
 // Display choices, kept apart from the mission db so "Reset demo data" never clears them,
 // and so data saved before preferences existed keeps working (missing fields use the defaults).

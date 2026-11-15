@@ -7,6 +7,16 @@ export function StatusPill({ level }) {
   return <span className={`inline-block shrink-0 rounded-full px-3.5 py-1 text-xs font-bold tracking-wider ${style.solid}`}>{style.word}</span>
 }
 
+// Gray tag for anything driven by the simulated sensors or the Presenter panel,
+// so demo data is never mistaken for real data.
+export function SimulatedTag() {
+  return (
+    <span className="inline-block shrink-0 rounded border border-oc-silver/70 bg-oc-silver/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.15em] text-oc-gray">
+      Simulated
+    </span>
+  )
+}
+
 // RIDGE hazard tags, e.g. [E · Environment]. Blue, because they are not a health status.
 export function HazardTags({ hazards }) {
   if (!hazards || hazards.length === 0) return null

@@ -2,16 +2,17 @@ import { useEffect, useState } from 'react'
 import { formatDelay } from '../engine/responseLevel.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { usePreferences } from '../store/PreferencesContext.jsx'
-import { BTN, BTN_DANGER, BTN_OUTLINE, LABEL, LEVEL_BADGE } from './ui.js'
+import { BTN, BTN_DANGER, BTN_OUTLINE, BTN_PRIMARY, LABEL, LEVEL_BADGE } from './ui.js'
 
 // Floating demo controls for presenting (bottom right of every page in the main layout).
 // Shift+P shows / hides the Presenter button; the choice is saved in preferences.
-// Uses the same useMission actions the old Demo controls did. No logic of its own.
+// Uses useMission actions (setMissionDay, advanceDay, setStorm, setCo2Spike, resetDemo). No logic of its own.
 export default function PresenterPanel() {
-  const { environment, missionDay, comms, responseLevel, sensors, setMissionDay, setStorm, setCo2Spike, resetDemo } = useMission()
+  const { environment, missionDay, comms, responseLevel, sensors, setMissionDay, advanceDay, setStorm, setCo2Spike, resetDemo } = useMission()
   const { presenterVisible, setPreference } = usePreferences()
   const [open, setOpen] = useState(false) // lives in Layout, so it stays open while navigating
   const [confirmReset, setConfirmReset] = useState(false)
+  const [dayMessage, setDayMessage] = useState('')
 
   useEffect(() => {
     function onKey(event) {
@@ -33,7 +34,14 @@ export default function PresenterPanel() {
         <section className="w-[22rem] rounded border border-oc-border bg-oc-bg p-4 text-white shadow-2xl shadow-black/40" aria-label="Presenter panel">
           <div className="flex items-center justify-between">
             <p className={`${LABEL} text-white`}>Presenter</p>
-            <button onClick={() => setOpen(false)} className="cursor-pointer text-oc-gray hover:text-white" aria-label="Close presenter panel">
+            <button
+              onClick={() => {
+                setOpen(false)
+                setDayMessage('')
+              }}
+              className="cursor-pointer text-oc-gray hover:text-white"
+              aria-label="Close presenter panel"
+            >
               ✕
             </button>
           </div>
@@ -57,12 +65,33 @@ export default function PresenterPanel() {
                 </p>
               </>
             ) : (
-              <p className="mt-1 text-sm text-oc-gray">Fixed at this location. Choose Spacecraft or Mars on Mission setup to move it.</p>
+              <p className="mt-1 text-sm text-oc-gray">
+                <span className="font-mono text-white">Day {missionDay}</span>. The delay does not depend on the day here. Choose Spacecraft or Mars on Mission setup to see it move.
+              </p>
             )}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               <span className="font-mono text-white">{formatDelay(comms)}</span>
               <span className={`rounded border-2 px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${LEVEL_BADGE[responseLevel.id]}`}>{responseLevel.label}</span>
             </div>
+          </div>
+
+          {/* Next day: all history moves 24 h back, so every daily check-in is due */}
+          <div className="mt-3 border-t border-oc-border/40 pt-3">
+            <button
+              className={`${BTN_PRIMARY} w-full`}
+              onClick={() => {
+                const nextDay = Math.min(missionDay + 1, environment.maxMissionDay)
+                advanceDay()
+                setDayMessage(`Day ${nextDay} started. All check-ins are due.`)
+              }}
+            >
+              Next day
+            </button>
+            {dayMessage && (
+              <p className="mt-2 text-sm text-white" role="status">
+                {dayMessage}
+              </p>
+            )}
           </div>
 
           {/* Sensor events */}

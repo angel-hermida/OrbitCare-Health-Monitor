@@ -17,6 +17,7 @@ import Radiation from './pages/Radiation.jsx'
 import Settings from './pages/Settings.jsx'
 import SymptomChecker from './pages/SymptomChecker.jsx'
 import { useMission } from './store/MissionContext.jsx'
+import { SpaceWeatherProvider } from './store/SpaceWeatherContext.jsx'
 
 export default function App() {
   const { astronaut } = useMission()
@@ -25,7 +26,7 @@ export default function App() {
   if (!astronaut) return <CrewPicker />
 
   return (
-    <>
+    <SpaceWeatherProvider>
       <RadiationAlertSound />
       <Routes>
         {/* Emergency mode takes over the whole screen (no sidebar). */}
@@ -48,6 +49,6 @@ export default function App() {
           <Route path="*" element={<Dashboard />} />
         </Route>
       </Routes>
-    </>
+    </SpaceWeatherProvider>
   )
 }

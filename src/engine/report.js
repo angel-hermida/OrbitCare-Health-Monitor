@@ -42,7 +42,7 @@ export function buildReport({ db, astronaut, scenario, stepsDone, mission, tempU
   for (const s of symptoms) lines.push(`- ${s.symptom}: ${s.title} [${s.level.toUpperCase()}] (${timeAgo(s.timestamp, now)})`)
   lines.push('')
 
-  lines.push('Habitat:')
+  lines.push('Habitat (SIMULATED sensors in this prototype):')
   for (const key of SENSOR_ORDER) {
     const status = getSensorStatus(key, sensors[key])
     lines.push(`- ${SENSOR_THRESHOLDS[key].label}: ${formatSensor(key, sensors[key], tempUnit)} [${status.level.toUpperCase()}]`)

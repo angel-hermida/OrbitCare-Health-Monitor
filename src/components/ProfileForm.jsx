@@ -106,7 +106,7 @@ export default function ProfileForm({ initial, title, submitLabel, onSubmit, onC
 
       <section className={CARD}>
         <h2 className={H2}>Medical history (optional)</h2>
-        <p className="mt-1 text-sm text-slate-400">Separate items with commas. Stored only on this device. The AI assistant will use this later.</p>
+        <p className="mt-1 text-sm text-slate-400">Separate items with commas. Stored only on this device.</p>
         <div className="mt-3 grid gap-4 sm:grid-cols-3">
           {field('Conditions', 'conditions', { placeholder: 'e.g. asthma' })}
           {field('Medications', 'medications')}
@@ -162,7 +162,7 @@ export default function ProfileForm({ initial, title, submitLabel, onSubmit, onC
         <button className={BTN_PRIMARY} disabled={!valid} onClick={() => onSubmit(profile, over)}>{submitLabel}</button>
         <button className={BTN} onClick={onCancel}>Cancel</button>
       </div>
-      <p className="text-sm text-slate-400">Prototype. Estimates are placeholders, not medical advice.</p>
+      <p className="text-sm text-slate-400">Estimated baselines are approximate and are not medical advice.</p>
     </div>
   )
 }
