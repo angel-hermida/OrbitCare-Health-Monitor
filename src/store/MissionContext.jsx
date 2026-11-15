@@ -126,6 +126,21 @@ export function MissionProvider({ children }) {
     setDb((prev) => ({ ...prev, symptoms: [...prev.symptoms, { ...entry, timestamp: Date.now() }] }))
   }, [])
 
+  // Memory bank (Isolation page): which messages were opened, and the Dashboard card dismissed for the day.
+  const markMemoryOpened = useCallback((messageId) => {
+    setDb((prev) => {
+      const opened = prev.memoryOpened ?? []
+      return opened.includes(messageId) ? prev : { ...prev, memoryOpened: [...opened, messageId] }
+    })
+  }, [])
+
+  const dismissMemoryCard = useCallback(() => {
+    setDb((prev) => ({
+      ...prev,
+      memoryCardDismissed: { ...(prev.memoryCardDismissed ?? {}), [prev.settings.astronautId]: prev.settings.missionDay },
+    }))
+  }, [])
+
   const resetDemo = useCallback(() => {
     setSensors(INITIAL_SENSORS)
     // Demo reset restores the 4 preset astronauts (undoing edits and removals) and keeps custom profiles (their readings are cleared).
@@ -174,6 +189,8 @@ export function MissionProvider({ children }) {
     setStorm,
     setCo2Spike,
     logSymptom,
+    markMemoryOpened,
+    dismissMemoryCard,
     resetDemo,
     getCheckContext,
   }

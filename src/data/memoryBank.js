@@ -9,23 +9,13 @@
 //   text        the note (always present, also for media messages)
 //   mediaUrl    file for photo / audio / video, or null for text. Relative to the site root
 //               (no leading slash) so it also works when the app is hosted in a subfolder.
-//   dropDay     mission day the message arrives. Days after the current mission day (120 in the
-//               demo) are still on their way and arrive with the next family drop
-//               (Presenter panel > Next day moves the mission day forward).
+//   dropDay     mission day the message arrived. A dropDay after the current mission day (120 in
+//               the demo) would stay hidden until Presenter > Next day reaches it.
 
 const photo = (file) => `memory/${file}`
 
 export const MEMORY_BANK = [
   // ---------- Maya Okafor (a1) ----------
-  {
-    id: 'mb-a1-1',
-    astronautId: 'a1',
-    from: 'James (home)',
-    type: 'text',
-    text: 'Garden is planted, the dog still waits by the door at six, and the girls do their homework without being asked. Mostly. Proud of you.',
-    mediaUrl: null,
-    dropDay: 105,
-  },
   {
     id: 'mb-a1-2',
     astronautId: 'a1',
@@ -43,15 +33,6 @@ export const MEMORY_BANK = [
     text: 'Picnic by the lake on Sunday. We saved your spot on the blanket and crossed another day off the calendar.',
     mediaUrl: photo('2147792-mama-5098862_1920.jpg'),
     dropDay: 120,
-  },
-  {
-    id: 'mb-a1-4',
-    astronautId: 'a1',
-    from: 'Ada & Zoe (your daughters)',
-    type: 'text',
-    text: 'Zoe lost her first tooth! The tooth fairy left a note about orbital mechanics. Photo in the next drop.',
-    mediaUrl: null,
-    dropDay: 126,
   },
 
   // ---------- Daniel Reyes (a2) ----------
@@ -73,35 +54,8 @@ export const MEMORY_BANK = [
     mediaUrl: photo('skalekar1992-christmas-wallpaper-3120717_1920.jpg'),
     dropDay: 116,
   },
-  {
-    id: 'mb-a2-3',
-    astronautId: 'a2',
-    from: 'Mom',
-    type: 'text',
-    text: 'The tomatoes you planted came up. I am saving the first ones for when you are home. Sleep well up there.',
-    mediaUrl: null,
-    dropDay: 120,
-  },
-  {
-    id: 'mb-a2-4',
-    astronautId: 'a2',
-    from: 'The whole family',
-    type: 'photo',
-    text: 'Leo’s welcome party. Everyone came, so we put your photo at the head of the table.',
-    mediaUrl: photo('family-of-three-871290963799xUk-3051839769.jpg'),
-    dropDay: 124,
-  },
 
   // ---------- Aiko Tanaka (a3) ----------
-  {
-    id: 'mb-a3-1',
-    astronautId: 'a3',
-    from: 'Mom & Dad',
-    type: 'text',
-    text: 'We read your last message three times. The cherry tree in the yard is blooming early this year.',
-    mediaUrl: null,
-    dropDay: 101,
-  },
   {
     id: 'mb-a3-2',
     astronautId: 'a3',
@@ -120,26 +74,8 @@ export const MEMORY_BANK = [
     mediaUrl: photo('family-of-three-871290963799xUk-3051839769.jpg'),
     dropDay: 119,
   },
-  {
-    id: 'mb-a3-4',
-    astronautId: 'a3',
-    from: 'Your sisters',
-    type: 'text',
-    text: 'Next drop: a video of Hana’s first laugh. Stand by.',
-    mediaUrl: null,
-    dropDay: 127,
-  },
 
   // ---------- Sam Whitfield (a4) ----------
-  {
-    id: 'mb-a4-1',
-    astronautId: 'a4',
-    from: 'Rachel (home)',
-    type: 'text',
-    text: 'The kids made a countdown chain. Eighteen links gone already. We are fine here. Focus on the mission.',
-    mediaUrl: null,
-    dropDay: 106,
-  },
   {
     id: 'mb-a4-2',
     astronautId: 'a4',
@@ -157,14 +93,5 @@ export const MEMORY_BANK = [
     text: 'Sunday dinner, everyone together. We set a place for you at the end of the table.',
     mediaUrl: photo('family-of-three-871290963799xUk-3051839769.jpg'),
     dropDay: 120,
-  },
-  {
-    id: 'mb-a4-4',
-    astronautId: 'a4',
-    from: 'Dad – your nephew’s first week',
-    type: 'photo',
-    text: 'Your brother’s boy arrived healthy. His whole hand fits on my palm. More pictures in the next drop.',
-    mediaUrl: photo('skalekar1992-christmas-wallpaper-3120717_1920.jpg'),
-    dropDay: 128,
   },
 ]

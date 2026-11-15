@@ -69,6 +69,8 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | Trend charts with colored range bands | `/history` |
 | **AI health assistant** (chat: current vitals, history, range check, trend + forecast, records, opens pages) | **Assistant** button in the top bar, every page |
 | **Medical records**: upload PDF / image, AI extracts conditions, medications, allergies, labs, exams | `/records` |
+| **Memory bank**: messages from home (text, photo, audio, video), family drop countdown, NEW tags, "Add from home" uploads (IndexedDB, offline) | `/isolation` |
+| Low mood 3 check-ins in a row → "A message from home is waiting" card | dashboard, low-mood symptom result |
 
 ### Routes
 
@@ -114,6 +116,7 @@ src/
     alarm.js               getRedConditions(): everything that should sound the master alarm
     responseLevel.js       delay to Earth and the four response levels
     symptomRunner.js       data checks + tree walking for the symptom checker
+    memoryBank.js          memory bank: arrived / pending messages, next family drop, NEW tag
     sensors.js             simulated sensor loop
     spaceWeather.js        live NASA DONKI fetch (FLR / SEP / GST / notifications), fallback mirror,
                            cache, status summary, "does it matter here" per location
@@ -130,6 +133,7 @@ src/
     storage.js             the only file that touches localStorage. addReading() and the
                            preferences section (loadPreferences / savePreferences) live here.
     MissionContext.jsx     global mission state. Components call useMission().
+    memoryUploads.js       "Add from home" photos / audio / video in IndexedDB (idb-keyval)
     PreferencesContext.jsx theme, temperature unit, alert sound, presenter button. usePreferences().
     SpaceWeatherContext.jsx live NASA space weather for every page, refreshed every 10 min. useSpaceWeather().
 
@@ -143,6 +147,7 @@ src/
     StatusPill.jsx         OK / CAUTION / ALERT / DUE label, and RIDGE hazard tags
     HabitatPanel.jsx       live sensor list
     TreeRunner.jsx         runs any symptom tree
+    MemoryBank.jsx         memory bank on the Isolation page: countdown, message cards, full view, Add from home
     TrendChart.jsx         line chart with colored bands
     HazardPage.jsx         frame for a RIDGE hazard page (letter, title, intro)
     motion.jsx             useAnimationsEnabled(), StaggerItem, Collapse (all animation goes through here)
@@ -359,10 +364,10 @@ These lists used to show inside the app ("Not built yet" boxes). They live here 
 - [ ] Pitch only: each astronaut's lifetime dose tracked against the career limit
 
 **Isolation (`pages/Isolation.jsx`)**
-- [ ] Memory bank: family photos, video and voice messages, with a new drop every month
-- [ ] Countdown to the next family drop
-- [ ] When mood is low for several days, suggest opening the memory bank and talking to the crew or ground
-- [ ] The memory bank is always open. Never lock it behind health tasks
+- [x] Memory bank: family photos, video and voice messages, delivered in family drops
+- [x] Countdown to the next family drop (shows when a message has a dropDay after the current mission day; all demo messages have already arrived)
+- [x] When mood is low for 3 check-ins, the dashboard suggests opening the memory bank (pick Aiko Tanaka to see it)
+- [x] The memory bank is always open. Never locked behind health tasks
 - [ ] Pitch only: private journal
 
 **Gravity (`pages/Gravity.jsx`)**

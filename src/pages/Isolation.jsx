@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import HazardPage from '../components/HazardPage.jsx'
+import MemoryBank from '../components/MemoryBank.jsx'
 import { BTN_PRIMARY, CARD, H2 } from '../components/ui.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { getReadings } from '../store/storage.js'
@@ -27,6 +28,8 @@ export default function Isolation() {
         </div>
         <Link to="/log?type=mood" className={`${BTN_PRIMARY} mt-4`}>Do today’s mood check-in</Link>
       </section>
+
+      <MemoryBank />
     </HazardPage>
   )
 }

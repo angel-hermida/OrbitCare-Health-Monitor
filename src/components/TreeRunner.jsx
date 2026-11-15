@@ -90,6 +90,10 @@ export default function TreeRunner({ tree, onRestart }) {
             ))}
           </ol>
 
+          {node.actions.some((action) => action.includes('message from home')) && (
+            <Link to="/isolation" className={`${BTN_PRIMARY} mt-4`}>Open memory bank</Link>
+          )}
+
           {node.escalate && (
             <div className="mt-4 rounded border border-oc-alert/70 bg-oc-alert/10 p-4">
               <p className="font-bold uppercase tracking-wider text-oc-alert">Escalate · {responseLevel.label}</p>

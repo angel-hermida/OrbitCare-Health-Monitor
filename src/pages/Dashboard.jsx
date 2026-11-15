@@ -8,8 +8,9 @@ import { INDICATOR_ORDER } from '../data/thresholds.js'
 import { getFreshness, getTodayProgress } from '../engine/checkin.js'
 import { getStreaks, streakLabel } from '../engine/streaks.js'
 import { getStatus } from '../engine/status.js'
+import { DATA_CHECKS } from '../engine/symptomRunner.js'
 import { useMission } from '../store/MissionContext.jsx'
-import { latestReading } from '../store/storage.js'
+import { getReadings, latestReading } from '../store/storage.js'
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 
@@ -48,8 +49,13 @@ function stripState(cards, progress) {
 }
 
 export default function Dashboard() {
-  const { db, astronaut, missionState, environment, responseLevel } = useMission()
+  const { db, astronaut, missionState, environment, responseLevel, missionDay, dismissMemoryCard } = useMission()
   const now = Date.now()
+
+  // Low mood 3 check-ins in a row: point to the memory bank. Dismissible for the mission day.
+  const lowMood = DATA_CHECKS.lowMood3d.run({ readings: getReadings(db, astronaut.id) }).result
+  const memoryCardDismissed = db.memoryCardDismissed?.[astronaut.id] === missionDay
+  const showMemoryCard = lowMood && !memoryCardDismissed
 
   // Latest reading + status for each indicator. A due reading gets no status color.
   const cards = INDICATOR_ORDER.map((type) => {
@@ -101,6 +107,20 @@ export default function Dashboard() {
         />
       </div>
       </StaggerItem>
+
+      {/* Low mood: a message from home (Isolation page) */}
+      {showMemoryCard && (
+        <section className={`${CARD} flex flex-wrap items-center gap-x-6 gap-y-3`} aria-label="Message from home">
+          <div className="min-w-[14rem] flex-1">
+            <p className="text-lg font-bold text-white">A message from home is waiting</p>
+            <p className="mt-1 text-sm text-oc-gray">Mood has been low for 3 check-ins. Take a few minutes for it.</p>
+          </div>
+          <div className="flex gap-3">
+            <Link to="/isolation" className={BTN_PRIMARY}>Open memory bank</Link>
+            <button className={BTN_OUTLINE} onClick={dismissMemoryCard}>Dismiss</button>
+          </div>
+        </section>
+      )}
 
       {/* Vital cards (stagger in, 40 ms apart) */}
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
