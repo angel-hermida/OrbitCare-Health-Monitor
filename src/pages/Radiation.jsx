@@ -13,7 +13,8 @@ export default function Radiation() {
   return (
     <StubPage
       letter="R"
-      title="Radiation"
+      title="Radiation Watch"
+      accent="Watch"
       intro="Outside Earth's magnetic field, solar storms can raise radiation fast. The app watches the level and tells the crew when and where to shelter."
       todo={[
         'Full-screen solar storm alert that appears on every page when radiation turns red',
@@ -23,13 +24,13 @@ export default function Radiation() {
         'Pitch only: each astronaut’s lifetime dose tracked against the career limit',
       ]}
     >
-      <section className={`rounded-xl border p-5 ${STATUS[status.level].border} ${STATUS[status.level].bg}`}>
+      <section className={`rounded border p-5 ${STATUS[status.level].border} ${STATUS[status.level].bg}`}>
         <div className="flex items-center justify-between">
           <h2 className={H2}>Radiation right now</h2>
           <StatusPill level={status.level} />
         </div>
-        <p className={`mt-2 text-3xl font-bold ${STATUS[status.level].text}`}>{formatSensor('radiation', sensors.radiation)}</p>
-        {status.level !== 'green' && <p className="mt-2 text-slate-100">{status.action}</p>}
+        <p className={`mt-2 font-mono text-4xl font-medium ${status.level === 'green' ? 'text-white' : STATUS[status.level].text}`}>{formatSensor('radiation', sensors.radiation)}</p>
+        {status.level !== 'green' && <p className="mt-2 text-white">{status.action}</p>}
       </section>
 
       <section className={CARD}>

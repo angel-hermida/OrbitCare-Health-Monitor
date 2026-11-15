@@ -13,7 +13,8 @@ export default function Gravity() {
   return (
     <StubPage
       letter="G"
-      title="Gravity"
+      title="Gravity Levels"
+      accent="Levels"
       intro="Without Earth gravity, bones and muscles do less work and get weaker. Moving between gravity levels also upsets balance and blood pressure."
       todo={[
         'Jump visual: a figure that jumps higher and lands slower in low gravity (height = Earth jump ÷ gravity)',
@@ -27,12 +28,12 @@ export default function Gravity() {
       <section className={`${CARD} grid gap-4 sm:grid-cols-2`}>
         <div>
           <h2 className={H2}>Gravity here</h2>
-          <p className="mt-1 text-3xl font-bold text-sky-300">{environment.gravityLabel}</p>
-          <p className="text-sm text-slate-400">{environment.name}</p>
+          <p className="mt-1 font-mono text-3xl font-medium text-white">{environment.gravityLabel}</p>
+          <p className="text-sm text-oc-gray">{environment.name}</p>
         </div>
         <div>
           <h2 className={H2}>How high you could jump</h2>
-          <p className="mt-1 text-3xl font-bold text-sky-300">{jump}</p>
+          <p className="mt-1 font-mono text-3xl font-medium text-white">{jump}</p>
           <p className="text-sm text-slate-400">On Earth: {EARTH_JUMP_METERS} m. Easier to move, but your bones and muscles work less.</p>
         </div>
       </section>

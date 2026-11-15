@@ -2,7 +2,12 @@ import { CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Too
 import { formatDate, formatDateTime } from '../engine/time.js'
 import { CARD } from './ui.js'
 
-const COLORS = { green: '#34d399', yellow: '#fbbf24', red: '#f87171' }
+// Status colors for the bands (palette in src/index.css), plus chart chrome.
+const COLORS = { green: '#22c55e', yellow: '#facc15', red: '#ef4444' }
+const LINE = '#3ba2ff' // Accent Blue
+const GRID = '#2e6edb' // Border
+const AXIS = '#b0b7c3' // Gray Text
+const PANEL = '#0b1e3a' // Background Navy
 
 // Turn green / yellow ranges into colored background bands that fill the chart.
 function makeBands(ranges, [bottom, top]) {
@@ -27,8 +32,8 @@ export default function TrendChart({ title, unit, points, ranges }) {
   if (points.length === 0) {
     return (
       <section className={CARD}>
-        <h3 className="font-semibold text-white">{title}</h3>
-        <p className="mt-2 text-slate-400">No readings in this period.</p>
+        <h3 className="font-bold text-white">{title}</h3>
+        <p className="mt-2 text-oc-gray">No readings in this period.</p>
       </section>
     )
   }
@@ -43,24 +48,25 @@ export default function TrendChart({ title, unit, points, ranges }) {
 
   return (
     <section className={CARD}>
-      <h3 className="font-semibold text-white">
-        {title} <span className="font-normal text-slate-400">({unit})</span>
+      <h3 className="font-bold text-white">
+        {title} <span className="font-normal text-oc-gray">({unit})</span>
       </h3>
       <div className="mt-3 h-52">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 5, right: 12, bottom: 0, left: -12 }}>
-            <CartesianGrid stroke="#1e293b" vertical={false} />
+            <CartesianGrid stroke={GRID} strokeOpacity={0.35} vertical={false} />
             {makeBands(ranges, domain).map((band) => (
               <ReferenceArea key={`${band.from}-${band.to}`} y1={band.from} y2={band.to} fill={band.color} fillOpacity={0.13} stroke="none" ifOverflow="hidden" />
             ))}
-            <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={formatDate} stroke="#64748b" tick={{ fontSize: 12 }} />
-            <YAxis domain={domain} allowDataOverflow stroke="#64748b" tick={{ fontSize: 12 }} />
+            <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={formatDate} stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
+            <YAxis domain={domain} allowDataOverflow stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
             <Tooltip
-              contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8 }}
+              contentStyle={{ background: PANEL, border: `1px solid ${GRID}`, borderRadius: 4, color: '#ffffff' }}
+              labelStyle={{ color: AXIS }}
               labelFormatter={formatDateTime}
               formatter={(value) => [`${value} ${unit}`, title]}
             />
-            <Line type="monotone" dataKey="value" stroke="#38bdf8" strokeWidth={2.5} dot={{ r: 2.5 }} isAnimationActive={false} />
+            <Line type="monotone" dataKey="value" stroke={LINE} strokeWidth={2.5} dot={{ r: 2.5, fill: LINE }} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

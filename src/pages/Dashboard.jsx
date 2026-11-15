@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import HabitatPanel from '../components/HabitatPanel.jsx'
 import StatusCard from '../components/StatusCard.jsx'
-import { BTN, BTN_PRIMARY, CARD, H1, H2, STATUS } from '../components/ui.js'
+import PageTitle from '../components/PageTitle.jsx'
+import { BTN, BTN_PRIMARY, CARD, LABEL, STATUS } from '../components/ui.js'
 import { INDICATOR_ORDER } from '../data/thresholds.js'
 import { getStatus } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
@@ -29,9 +30,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className={H1}>Health status</h1>
-          <p className={`mt-1 text-lg font-medium ${STATUS[overall].text}`}>{SUMMARY[overall]}</p>
+        <div className="min-w-0 flex-1">
+          <PageTitle title="Health Status" accent="Status" />
+          <p className={`mt-3 text-lg font-medium ${STATUS[overall].text}`}>{SUMMARY[overall]}</p>
         </div>
         <div className="flex gap-3">
           <Link to="/log" className={BTN_PRIMARY}>Log a reading</Link>
@@ -39,7 +40,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
           <StatusCard key={card.type} {...card} />
         ))}
@@ -48,17 +49,13 @@ export default function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-2">
         <HabitatPanel />
         <section className={CARD}>
-          <h2 className={H2}>Where you are</h2>
-          <p className="mt-2 text-slate-200">{environment.context}</p>
-          <p className="mt-3 text-slate-300">
-            <span className="font-semibold text-white">Gravity: </span>
-            {environment.gravityLabel}
-          </p>
-          <p className="mt-1 text-slate-300">
-            <span className="font-semibold text-white">{responseLevel.label}: </span>
-            {responseLevel.summary}
-          </p>
-          <Link to="/settings" className="mt-3 inline-block font-semibold text-sky-400 hover:text-sky-300">
+          <PageTitle title="Where you are" accent="you are" as="h2" size="text-xl" />
+          <p className="mt-4 text-white/90">{environment.context}</p>
+          <p className={`${LABEL} mt-4`}>Gravity</p>
+          <p className="font-mono text-lg text-white">{environment.gravityLabel}</p>
+          <p className={`${LABEL} mt-3`}>Response level · {responseLevel.label}</p>
+          <p className="text-white/90">{responseLevel.summary}</p>
+          <Link to="/settings" className="mt-4 inline-block font-semibold text-oc-blue hover:underline">
             Change location or mission day
           </Link>
         </section>

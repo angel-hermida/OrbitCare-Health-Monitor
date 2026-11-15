@@ -6,10 +6,67 @@
 @import "@fontsource/inter/latin-800.css";
 @import "@fontsource/inter/latin-700-italic.css";
 @import "@fontsource/inter/latin-800-italic.css";
+@import "@fontsource/dm-mono/latin-400.css";
+@import "@fontsource/dm-mono/latin-500.css";
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+
+  /* OrbitCare palette (design/style-guide.webp). Use as bg-oc-bg, text-oc-gray, border-oc-border ... */
+  --color-oc-bg: #0b1e3a; /* Background Navy */
+  --color-oc-panel: #113c7a; /* Panel Navy */
+  --color-oc-border: #2e6edb; /* Border */
+  --color-oc-gray: #b0b7c3; /* Gray Text */
+  --color-oc-blue: #3ba2ff; /* Accent Blue */
+  --color-oc-red: #ff3b3b; /* Accent Red: highlight words and accent lines */
+  --color-oc-green: #22c55e; /* Status Green (OK) */
+  --color-oc-yellow: #facc15; /* Status Yellow (Caution) */
+  --color-oc-alert: #ef4444; /* Status Red (Alert) and the EMERGENCY button */
+}
+
+/* ---------- App shell (every page except the crew picker) ----------
+   Layout.jsx and Emergency.jsx put `oc-app` on their root element. Inside it, the
+   Tailwind slate / sky / green / amber scales used by older page code are pointed at
+   the OrbitCare palette, and corners are capped at 4px (pills stay round).
+   The crew picker sits outside `oc-app`, so none of this reaches it.
+   It lives in the base layer so utility classes on the same element (e.g. Emergency's red tint) still win. */
+@layer base {
+.oc-app {
+  --color-slate-50: #ffffff;
+  --color-slate-100: #ffffff;
+  --color-slate-200: #ffffff;
+  --color-slate-300: #b0b7c3;
+  --color-slate-400: #b0b7c3;
+  --color-slate-500: #b0b7c3;
+  --color-slate-600: #2e6edb;
+  --color-slate-700: #2e6edb;
+  --color-slate-800: #113c7a;
+  --color-slate-900: #0b1e3a;
+  --color-slate-950: #0b1e3a;
+  --color-sky-300: #3ba2ff;
+  --color-sky-400: #3ba2ff;
+  --color-sky-500: #3ba2ff;
+  --color-emerald-300: #22c55e;
+  --color-emerald-400: #22c55e;
+  --color-emerald-500: #22c55e;
+  --color-amber-300: #facc15;
+  --color-amber-400: #facc15;
+  --color-red-400: #ef4444;
+  --color-red-500: #ef4444;
+  --color-red-600: #ef4444;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  background-color: var(--color-oc-bg);
+  color: #ffffff;
+}
+
+.oc-app input[type="range"] {
+  accent-color: var(--color-oc-blue);
+}
 }
 
 html,

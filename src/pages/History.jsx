@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import TrendChart from '../components/TrendChart.jsx'
-import { H1 } from '../components/ui.js'
+import PageTitle from '../components/PageTitle.jsx'
 import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
 import { getIndicatorRanges } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
@@ -46,9 +46,9 @@ export default function History() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className={H1}>Trends</h1>
-          <p className="mt-1 text-slate-300">
+        <div className="min-w-0 flex-1">
+          <PageTitle title="Health Trends" accent="Trends" />
+          <p className="mt-3 text-oc-gray">
             {astronaut.name} · green, yellow and red bands show the limits at the current response level ({responseLevel.label}).
           </p>
         </div>
@@ -57,7 +57,7 @@ export default function History() {
             <button
               key={option}
               onClick={() => setDays(option)}
-              className={`cursor-pointer rounded-lg border px-4 py-2 font-medium ${option === days ? 'border-sky-400 bg-sky-500/15 text-sky-300' : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+              className={`cursor-pointer rounded border px-4 py-2 text-sm font-semibold uppercase tracking-wider ${option === days ? 'border-oc-blue bg-oc-panel text-white' : 'border-oc-border/60 text-oc-gray hover:bg-oc-panel/40 hover:text-white'}`}
             >
               {option} days
             </button>

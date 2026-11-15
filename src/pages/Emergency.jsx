@@ -42,7 +42,7 @@ export default function Emergency() {
   }
 
   return (
-    <div className="min-h-full bg-red-950/40">
+    <div className="oc-app min-h-full bg-red-950/40">
       <header className="flex flex-wrap items-center justify-between gap-4 bg-red-600 px-6 py-4">
         <div>
           <p className="text-2xl font-black tracking-wide text-white">EMERGENCY MODE</p>
@@ -62,7 +62,7 @@ export default function Emergency() {
           <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
             <p className="flex flex-wrap items-center gap-2 font-bold text-white">
               Who leads
-              <span className={`rounded-md border px-2 py-0.5 text-sm ${LEVEL_BADGE[responseLevel.id]}`}>{responseLevel.label}</span>
+              <span className={`rounded border-2 px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${LEVEL_BADGE[responseLevel.id]}`}>{responseLevel.label}</span>
             </p>
             <p className="text-slate-100">{responseLevel.redInstruction}</p>
             <p className="mt-1 text-sm text-slate-400">Delay to Earth: {formatDelay(comms)}</p>
@@ -100,7 +100,7 @@ export default function Emergency() {
                 <button className={`${BIG_BTN} bg-white text-slate-950 hover:bg-slate-200`} onClick={() => setStepIndex(stepIndex + 1)}>Next step</button>
               )}
               {isLast && (
-                <button className={`${BIG_BTN} bg-emerald-400 text-slate-950 hover:bg-emerald-300`} onClick={finish}>Done · Build report</button>
+                <button className={`${BIG_BTN} bg-oc-blue text-white hover:bg-oc-blue/85`} onClick={finish}>Done · Build report</button>
               )}
               <button className="ml-auto cursor-pointer text-slate-300 underline hover:text-white" onClick={() => setScenario(null)}>Choose a different emergency</button>
             </div>

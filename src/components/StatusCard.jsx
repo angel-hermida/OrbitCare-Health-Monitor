@@ -5,42 +5,47 @@ import { timeAgo } from '../engine/time.js'
 import { StatusPill } from './StatusPill.jsx'
 import { STATUS } from './ui.js'
 
-// One indicator on the dashboard: number -> color -> plain sentence -> next step.
+// One indicator on the dashboard (style guide section 5, "Vital card"):
+// title -> big number + status pill on a dark band -> plain sentence -> next step.
+// Yellow and red cards also get a colored ring so they stand out in the grid.
 export default function StatusCard({ type, reading, status }) {
   const def = THRESHOLDS[type]
-  const style = STATUS[status ? status.level : 'none']
+  const level = status ? status.level : 'none'
 
   return (
-    <div className={`flex flex-col rounded-xl border p-5 ${style.border} ${style.bg}`}>
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="font-semibold text-slate-200">{def.label}</h3>
-        <StatusPill level={status ? status.level : 'none'} />
+    <div className={`flex flex-col overflow-hidden rounded bg-white text-oc-bg ${STATUS[level].ring}`}>
+      <h3 className="px-5 pb-3 pt-4 text-lg font-bold uppercase tracking-wider">{def.label}</h3>
+
+      <div className="flex items-center gap-4 bg-oc-bg px-5 py-4">
+        <p className="min-w-0 flex-1 break-words font-mono text-[26px] font-medium leading-tight text-white">{reading ? formatValue(type, reading.value) : '—'}</p>
+        <span className="h-10 w-px bg-white/30" aria-hidden="true" />
+        <StatusPill level={level} />
       </div>
 
-      <p className={`mt-3 text-3xl font-bold ${style.text}`}>{reading ? formatValue(type, reading.value) : '—'}</p>
+      <div className="flex flex-1 flex-col px-5 py-4">
+        {status ? (
+          <>
+            <p className="text-[17px] leading-snug">{status.message}</p>
+            <p className="mt-3 border-t border-oc-gray/60 pt-3 leading-snug">
+              <span className="font-bold">Next step: </span>
+              {status.action}
+            </p>
+            <p className="mt-3 text-xs text-oc-bg/60">
+              Measured {timeAgo(reading.timestamp)} · {reading.source}
+            </p>
+          </>
+        ) : (
+          <p className="leading-snug">No reading yet. Log one to see your status.</p>
+        )}
 
-      {status ? (
-        <>
-          <p className="mt-2 text-slate-100">{status.message}</p>
-          <p className="mt-2 text-sm text-slate-300">
-            <span className="font-semibold text-slate-100">Next step: </span>
-            {status.action}
-          </p>
-          <p className="mt-3 text-xs text-slate-400">
-            Measured {timeAgo(reading.timestamp)} · {reading.source}
-          </p>
-        </>
-      ) : (
-        <p className="mt-2 text-slate-300">No reading yet. Log one to see your status.</p>
-      )}
-
-      <div className="mt-auto flex gap-4 pt-4 text-sm">
-        <Link to={`/log?type=${type}`} className="font-semibold text-sky-400 hover:text-sky-300">
-          Log new
-        </Link>
-        <Link to={`/guides#${type}`} className="text-slate-300 hover:text-white">
-          How to measure
-        </Link>
+        <div className="mt-auto flex gap-5 pt-4 text-sm font-semibold">
+          <Link to={`/log?type=${type}`} className="text-oc-border hover:underline">
+            Log new
+          </Link>
+          <Link to={`/guides#${type}`} className="text-oc-bg/70 hover:text-oc-bg hover:underline">
+            How to measure
+          </Link>
+        </div>
       </div>
     </div>
   )
