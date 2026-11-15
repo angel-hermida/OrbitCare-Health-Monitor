@@ -3,12 +3,21 @@
 // Data flow:  form -> addReading() -> db (saved to localStorage) -> status engine -> UI
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { getAstronaut } from '../data/crew.js'
 import { ENVIRONMENTS } from '../data/environments.js'
 import { getComms, getResponseLevel } from '../engine/responseLevel.js'
 import { INITIAL_SENSORS, SENSOR_TICK_MS, stepSensors } from '../engine/sensors.js'
 import { createSeedDb } from '../engine/seed.js'
-import { addReading as addReadingToDb, getReadings, loadDb, saveDb } from './storage.js'
+import {
+  addAstronaut as addAstronautToDb,
+  addReading as addReadingToDb,
+  allAstronauts,
+  findAstronaut,
+  getReadings,
+  loadDb,
+  removeAstronaut as removeAstronautFromDb,
+  saveDb,
+  updateAstronaut as updateAstronautInDb,
+} from './storage.js'
 
 const MissionContext = createContext(null)
 
@@ -29,7 +38,8 @@ export function MissionProvider({ children }) {
   }, [])
 
   const { settings } = db
-  const astronaut = getAstronaut(settings.astronautId)
+  const astronaut = findAstronaut(db, settings.astronautId)
+  const crew = useMemo(() => allAstronauts(db), [db])
   const environment = ENVIRONMENTS[settings.environment]
   const comms = useMemo(() => getComms(settings.environment, settings.missionDay), [settings.environment, settings.missionDay])
   const responseLevel = getResponseLevel(comms)
@@ -45,6 +55,24 @@ export function MissionProvider({ children }) {
   }, [])
 
   const selectAstronaut = useCallback((astronautId) => updateSettings({ astronautId }), [updateSettings])
+
+  // Create a custom astronaut and sign in as them.
+  const addAstronaut = useCallback((profile, overrides) => {
+    setDb((prev) => {
+      const { db: next, astronaut } = addAstronautToDb(prev, profile, overrides)
+      return { ...next, settings: { ...next.settings, astronautId: astronaut.id } }
+    })
+  }, [])
+
+  // Save edits to a profile and its baselines.
+  const updateAstronaut = useCallback((id, profile, overrides) => {
+    setDb((prev) => updateAstronautInDb(prev, id, profile, overrides))
+  }, [])
+
+  // Remove an astronaut and their data. If it is the current user, the crew picker shows next.
+  const removeAstronaut = useCallback((id) => {
+    setDb((prev) => removeAstronautFromDb(prev, id))
+  }, [])
 
   const setEnvironment = useCallback((envId) => {
     setDb((prev) => {
@@ -80,7 +108,8 @@ export function MissionProvider({ children }) {
 
   const resetDemo = useCallback(() => {
     setSensors(INITIAL_SENSORS)
-    setDb(createSeedDb())
+    // Demo reset restores the 4 preset astronauts (undoing edits and removals) and keeps custom profiles (their readings are cleared).
+    setDb((prev) => ({ ...createSeedDb(), astronauts: prev.astronauts ?? [] }))
   }, [])
 
   // What the status engine needs to know about the mission.
@@ -104,6 +133,7 @@ export function MissionProvider({ children }) {
   const value = {
     db,
     astronaut,
+    crew,
     environment,
     missionDay: settings.missionDay,
     comms,
@@ -112,6 +142,9 @@ export function MissionProvider({ children }) {
     sensors,
     addReading,
     selectAstronaut,
+    addAstronaut,
+    updateAstronaut,
+    removeAstronaut,
     setEnvironment,
     setMissionDay,
     setStorm,

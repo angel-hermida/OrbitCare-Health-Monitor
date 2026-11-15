@@ -149,6 +149,22 @@ Good moments to show:
 3. **R**: Trigger solar storm → the Habitat panel turns red with shelter advice for the current location → Emergency → Radiation storm.
 4. **Report**: finish any emergency to see the packaged report and the reply estimate.
 
+## Custom astronaut profiles (branch `feature/custom-astronaut-profiles`)
+
+Crew picker -> **+ New astronaut**: name, role, age, gender, weight, height, optional medical history.
+
+- `engine/personalize.js`: `estimateBaseline()` makes a starting Earth baseline from the profile. `attentionProfile()` returns a scale (1 = standard, 0.7 = strictest) that shrinks the "distance from baseline" limits in `status.js`, so the same reading can be green for one astronaut and yellow for another. Age 50+, age 65+, BMI outside 18.5-30 and listed medical conditions each raise attention. The 4 preset astronauts stay Standard, so the demo script is unchanged.
+- Any baseline the astronaut already knows can be typed over the estimate. `baselineSource` records which.
+- Custom profiles are saved in `db.astronauts` (`store/storage.js`). Demo reset keeps them.
+- **Edit:** Profile page -> *Edit profile* changes any detail, baseline or medical history (`components/ProfileForm.jsx`, shared with the new-profile form). Past readings are kept and rated against the new baseline. *Re-estimate from profile* resets baselines to the formulas.
+- **Remove:** Profile page -> *Remove from crew* (with confirmation) deletes the profile, their readings and symptom logs. Edits and removals of the 4 presets are stored in `db.edits` / `db.removedIds`, and *Reset demo* restores the presets.
+- `engine/aiContext.js`: `buildAstronautContext()` returns the plain-text summary (profile, attention level, medical history, latest readings with status) that the AI assistant will receive. Add new record fields there.
+- `npm run check` runs the logic checks in `scripts/check-personalization.mjs`.
+
+All formulas in `personalize.js` are placeholders and need clinical review. Medical history is stored in the browser only.
+
+Next: learn baselines from the first week of real readings, let conditions adjust specific limits, a baseline change history, then the AI chat panel.
+
 ## TODO checklist
 
 ### Unverified content (do this before presenting)

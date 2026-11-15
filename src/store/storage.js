@@ -4,7 +4,13 @@
 //     events:   [{ type: 'solarStorm' | 'co2Spike', timestamp }],
 //     symptoms: [{ astronautId, symptom, title, hazards, level, timestamp }],
 //     settings: { astronautId, environment, missionDay, environmentChangedAt },
+//     astronauts: [custom profiles made in the app; the 4 presets live in data/crew.js],
+//     edits:      { [presetId]: changed fields }   (edits to a preset astronaut),
+//     removedIds: [ids of preset astronauts removed from the crew],
 //   }
+
+import { CREW } from '../data/crew.js'
+import { applyOverrides, estimateBaseline } from '../engine/personalize.js'
 
 const KEY = 'astrohealth.v1'
 
@@ -57,4 +63,74 @@ export function getReadings(db, astronautId, type) {
 export function latestReading(db, astronautId, type) {
   const list = getReadings(db, astronautId, type)
   return list.length ? list[list.length - 1] : null
+}
+
+// ----- astronaut profiles -----
+
+// Presets first, then custom ones. Removed presets are hidden, edited presets get their changes.
+// Older saved dbs have none of these fields.
+export function allAstronauts(db) {
+  const removed = db.removedIds ?? []
+  return [...CREW, ...(db.astronauts ?? [])]
+    .filter((a) => !removed.includes(a.id))
+    .map((a) => (db.edits?.[a.id] ? { ...a, ...db.edits[a.id] } : a))
+}
+
+export function findAstronaut(db, id) {
+  return allAstronauts(db).find((a) => a.id === id) || null
+}
+
+// profile: { name, role, age, gender, weightKg, heightCm, medical? }
+// overrides: baseline numbers the astronaut already knows (see engine/personalize.js applyOverrides).
+// Returns { db, astronaut }. The baseline starts as an estimate unless overridden.
+export function addAstronaut(db, profile, overrides = {}) {
+  const baseline = applyOverrides(estimateBaseline(profile), overrides)
+  const hasOverride = Object.values(overrides).some((v) => v !== '' && v != null)
+  const astronaut = {
+    ...profile,
+    id: `c-${Date.now().toString(36)}`,
+    custom: true,
+    baseline,
+    baselineSource: hasOverride ? 'partly entered' : 'estimated',
+    medical: { conditions: [], medications: [], allergies: [], notes: '', ...(profile.medical || {}) },
+  }
+  return { db: { ...db, astronauts: [...(db.astronauts ?? []), astronaut] }, astronaut }
+}
+
+// Save changes to a profile and its baselines. Works for presets and custom astronauts.
+// overrides: baseline numbers to use (see applyOverrides). Anything blank falls back to the estimate.
+// Past readings are kept; they are simply rated against the new baseline from now on.
+export function updateAstronaut(db, id, profile, overrides = {}) {
+  const current = findAstronaut(db, id)
+  if (!current) return db
+  const patch = {
+    ...profile,
+    baseline: applyOverrides(estimateBaseline(profile), overrides),
+    baselineSource: 'edited',
+    baselineUpdatedAt: Date.now(),
+    medical: { conditions: [], medications: [], allergies: [], notes: '', ...(profile.medical || {}) },
+  }
+  if (current.custom) {
+    return { ...db, astronauts: db.astronauts.map((a) => (a.id === id ? { ...a, ...patch } : a)) }
+  }
+  return { ...db, edits: { ...(db.edits ?? {}), [id]: patch } }
+}
+
+// Remove an astronaut from the crew and delete their readings and symptom logs.
+export function removeAstronaut(db, id) {
+  const current = findAstronaut(db, id)
+  if (!current) return db
+  const next = {
+    ...db,
+    readings: db.readings.filter((r) => r.astronautId !== id),
+    symptoms: (db.symptoms ?? []).filter((s) => s.astronautId !== id),
+    settings: db.settings.astronautId === id ? { ...db.settings, astronautId: null } : db.settings,
+  }
+  if (current.custom) next.astronauts = db.astronauts.filter((a) => a.id !== id)
+  else next.removedIds = [...(db.removedIds ?? []), id]
+  if (next.edits?.[id]) {
+    const { [id]: _gone, ...rest } = next.edits
+    next.edits = rest
+  }
+  return next
 }
