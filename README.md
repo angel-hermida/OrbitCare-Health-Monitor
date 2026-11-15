@@ -90,6 +90,7 @@ src/
     environments.js        ISS / spacecraft / Moon / Mars: gravity, context, shelter advice
     hazards.js             the RIDGE letters, names and page links
     checkin.js             how often each indicator should be measured (hours)
+    memoryBank.js          demo messages from home per crew member (photos in public/memory/)
 
   engine/                  LOGIC. No React in here.
     status.js              getStatus(): value -> level, message, action. Also formatting (°C / °F).
