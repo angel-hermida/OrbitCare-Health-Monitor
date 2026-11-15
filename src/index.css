@@ -1,4 +1,16 @@
+/* Inter, bundled locally so the app keeps working offline. */
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/inter/latin-800.css";
+@import "@fontsource/inter/latin-700-italic.css";
+@import "@fontsource/inter/latin-800-italic.css";
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
 
 html,
 body,
@@ -10,10 +22,53 @@ body {
   margin: 0;
   background: #020617; /* slate-950 */
   color: #e2e8f0; /* slate-200 */
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 17px;
 }
 
 input[type="range"] {
   accent-color: #38bdf8;
+}
+
+/* ---------- OrbitCare space backdrop (crew picker) ---------- */
+
+/* Deep-space gradient with a scattered star field. */
+.oc-space {
+  background-color: #050b1f;
+  background-image:
+    radial-gradient(1px 1px at 23px 41px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 141px 97px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 260px 18px, rgba(186, 230, 253, 0.9), transparent),
+    radial-gradient(1px 1px at 302px 211px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 77px 260px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 199px 302px, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(30, 64, 175, 0.35), transparent 70%),
+    linear-gradient(180deg, #071233 0%, #050b1f 60%, #040817 100%);
+  background-size: 340px 340px, 340px 340px, 340px 340px, 340px 340px, 340px 340px, 340px 340px, 100% 100%, 100% 100%;
+}
+
+/* Earth seen from orbit: a huge planet (center off-screen to the left) whose edge
+   enters at the left of the page and slopes down to the bottom right. */
+.oc-earth {
+  position: absolute;
+  left: -320vw;
+  top: 64%;
+  width: 600vw;
+  height: 600vw;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 56% 0.6%, rgba(255, 244, 214, 0.45) 0%, transparent 2.5%),
+    radial-gradient(circle at 55% 0%, #5b9be6 0%, #2563b8 1.5%, #123a7a 3%, #0a2250 5%, #071531 8%);
+  box-shadow:
+    0 0 40px 6px rgba(96, 165, 250, 0.75),
+    0 0 140px 40px rgba(37, 99, 235, 0.35),
+    inset 0 18px 40px rgba(147, 197, 253, 0.55);
+  pointer-events: none;
+}
+
+/* Thin glowing horizon line with a star, under the main heading. */
+.oc-horizon {
+  height: 2px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.95) 0%, rgba(96, 165, 250, 0.8) 30%, transparent 75%);
+  border-radius: 50%;
 }
