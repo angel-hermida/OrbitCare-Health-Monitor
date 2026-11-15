@@ -50,7 +50,9 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | **Live NASA space weather** (flares, particle events, geomagnetic storms, last 30 days) | `/radiation` |
 | Simulated cabin + radiation sensors (labelled SIMULATED) | Habitat panel (dashboard, `/environment`), `/radiation` |
 | Demo controls: mission day, Next day, solar storm, CO₂ spike, reset | Presenter panel (button bottom right, Shift+P hides it) |
-| Theme (dark / light), °C / °F, alert sound | `/settings` |
+| Theme (dark / light), animations, °C / °F, master alarm sound | `/settings` |
+| Master alarm (red bar + repeating sound for any red condition) | every page, incl. Emergency mode |
+| Check-in streaks | dashboard status strip, `/profile` |
 | 30 days of demo history | loads on first run, reset from the Presenter panel |
 | Trend charts with colored range bands | `/history` |
 
@@ -92,6 +94,8 @@ src/
   engine/                  LOGIC. No React in here.
     status.js              getStatus(): value -> level, message, action. Also formatting (°C / °F).
     checkin.js             getFreshness() and getTodayProgress() for the daily check-in
+    streaks.js             getStreaks(): current / best check-in streak
+    alarm.js               getRedConditions(): everything that should sound the master alarm
     responseLevel.js       delay to Earth and the four response levels
     symptomRunner.js       data checks + tree walking for the symptom checker
     sensors.js             simulated sensor loop
@@ -123,8 +127,9 @@ src/
     motion.jsx             useAnimationsEnabled(), StaggerItem, Collapse (all animation goes through here)
     StartupScreen.jsx      once-per-session startup screen
     SpaceFrame.jsx         crew-picker style frame for New Crew Profile
-    RadiationAlertSound.jsx  beeps once when radiation turns red (if sound is on)
-    alertSound.js          the beep (Web Audio API, no files)
+    MasterAlarm.jsx        red bar + repeating alarm for every red condition (mounted in App.jsx)
+    alertSound.js          alarm tones (Web Audio API, no files)
+    StreakToast.jsx        "Check-in complete · N-day streak" toast
     ui.js                  shared Tailwind class strings and status colors
 
   pages/                   one file per screen
@@ -145,7 +150,7 @@ Saved in `localStorage` under their own key (`orbitcare.preferences.v1`) through
 
 - **Theme**: `<html data-theme="dark|light">`. Only elements inside `.oc-app` follow it (see `index.css`); the top bar and Emergency mode use `.oc-dark` to stay dark, and the crew picker is outside `.oc-app` so it never changes.
 - **Temperature unit**: display only. Readings, thresholds and the status engine stay in °C; `formatValue` / `formatSensor` take an optional unit.
-- **Alert sound**: a short beep when a newly logged reading is red, and once each time radiation turns red.
+- **Master alarm sound** (key `alertSound`, default On): Off = the red bar still shows, without sound.
 - **Presenter button**: Shift+P shows / hides it.
 - **Animations** (default On): page transitions, startup screen, micro-animations. Also exposed as `useMission().animationsPreference`.
 
@@ -250,6 +255,23 @@ Judges should be able to tell them apart at a glance:
 - **Symptom checker**: the "Solar storms in the last 24 hours" check uses real NASA events (particles, M/X flares, Kp 5+ storms) as well as the Presenter panel's simulated storm. The step is tagged SIMULATED only when the simulated storm triggered it.
 - An X-class flare or particle event in the last 24 hours shows a warning banner with the shelter advice for the current location.
 - Never shows an error screen: on failure it shows the cached result, or an offline note. The crew explanations are OrbitCare's wording, not NASA's; the page says so.
+
+### Check-in streaks (engine/streaks.js)
+
+- Same day rule as the check-in: "today" = the last 24 h, "yesterday" = the 24 h before, and so on. A day is complete when all six indicators were logged in it.
+- **Current streak** = consecutive complete days up to today. If today is not complete yet, it shows the run up to yesterday with "Complete today's check-in to keep it". **Best streak** = longest run in the history.
+- Shown on the dashboard status strip and on `/profile`. Logging the sixth check-in of the day shows a short toast: "Check-in complete · N-day streak". Nothing is ever locked behind a streak.
+- Works with the Presenter **Next day** button (history moves 24 h back, so today starts empty and the streak shows yesterday's run).
+
+### Master alarm (engine/alarm.js, components/MasterAlarm.jsx)
+
+A red condition is active when any of these is true: the latest (non-due) reading of a vital is red; a cabin sensor is red (simulated, labelled so); NASA's 24-hour warning is active (X-class flare or SEP); Emergency mode is open.
+
+- While active: slim red bar at the top of every page ("MASTER ALARM · Heart rate 130 bpm · ...") and a two-tone alarm every 2 s (Web Audio, offline).
+- **Acknowledge** silences the sound; the bar stays ("Acknowledged"). A new red condition (including a new red reading) sounds again.
+- Opening Emergency mode: three rising beeps, then the repeating alarm. The page opens instantly; sound never delays it.
+- Everything clear: sound stops, the bar shows "All clear" for 5 s, then disappears. Switching crew member stops the alarm.
+- Browsers only play sound after the user has clicked or typed on the page once.
 
 ### Next day (Presenter panel)
 

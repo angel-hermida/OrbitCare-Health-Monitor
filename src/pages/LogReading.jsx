@@ -7,7 +7,6 @@ import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
 import { formatValue, getStatus } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { usePreferences } from '../store/PreferencesContext.jsx'
-import { playAlertBeep } from '../components/alertSound.js'
 
 const EMPTY_FIELDS = {
   heartRate: '',
@@ -85,7 +84,7 @@ function Slider({ label, low, high, value, onChange }) {
 
 export default function LogReading() {
   const { astronaut, missionState, addReading } = useMission()
-  const { tempUnit, alertSound } = usePreferences()
+  const { tempUnit } = usePreferences() // red readings sound through the Master Alarm (components/MasterAlarm.jsx)
   const [params] = useSearchParams()
   const [type, setType] = useState(INDICATOR_ORDER.includes(params.get('type')) ? params.get('type') : 'heartRate')
   // The temperature field starts in the unit chosen in Settings.
@@ -117,7 +116,6 @@ export default function LogReading() {
     addReading({ astronautId: astronaut.id, type, value: built.value, source: 'manual', extra: built.extra })
     const status = getStatus(type, built.value, astronaut, missionState)
     setSaved({ type, value: built.value, status })
-    if (status.level === 'red' && alertSound) playAlertBeep()
     setError('')
     setFields(emptyFields)
   }

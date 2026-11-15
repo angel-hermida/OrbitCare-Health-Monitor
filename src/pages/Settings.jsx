@@ -1,4 +1,4 @@
-import { playAlertBeep } from '../components/alertSound.js'
+import { playAlarmPattern } from '../components/alertSound.js'
 import PageTitle from '../components/PageTitle.jsx'
 import Segmented from '../components/Segmented.jsx'
 import { CARD, LABEL } from '../components/ui.js'
@@ -49,14 +49,14 @@ export default function Settings() {
       <section>
         <PageTitle title="Alerts" as="h2" size="text-xl" />
         <div className={`${CARD} mt-3 py-1`}>
-          <Row title="Sound on red alerts" description="A short beep when a newly logged reading is red, and when radiation first turns red.">
+          <Row title="Master alarm sound" description="Repeating alarm while any reading, cabin sensor or NASA warning is red, or Emergency mode is open. Off = the red bar still shows, without sound.">
             <Segmented
-              label="Sound on red alerts"
+              label="Master alarm sound"
               value={alertSound}
               options={[[true, 'On'], [false, 'Off']]}
               onChange={(v) => {
                 setPreference('alertSound', v)
-                if (v) playAlertBeep() // let the user hear what it sounds like
+                if (v) playAlarmPattern() // let the user hear what it sounds like
               }}
             />
           </Row>
