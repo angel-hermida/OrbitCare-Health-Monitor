@@ -7,7 +7,17 @@ import { ENVIRONMENTS } from '../data/environments.js'
 import { getComms, getResponseLevel } from '../engine/responseLevel.js'
 import { INITIAL_SENSORS, SENSOR_TICK_MS, stepSensors } from '../engine/sensors.js'
 import { createSeedDb } from '../engine/seed.js'
-import { addAstronaut as addAstronautToDb, addReading as addReadingToDb, allAstronauts, findAstronaut, getReadings, loadDb, saveDb } from './storage.js'
+import {
+  addAstronaut as addAstronautToDb,
+  addReading as addReadingToDb,
+  allAstronauts,
+  findAstronaut,
+  getReadings,
+  loadDb,
+  removeAstronaut as removeAstronautFromDb,
+  saveDb,
+  updateAstronaut as updateAstronautInDb,
+} from './storage.js'
 
 const MissionContext = createContext(null)
 
@@ -54,6 +64,16 @@ export function MissionProvider({ children }) {
     })
   }, [])
 
+  // Save edits to a profile and its baselines.
+  const updateAstronaut = useCallback((id, profile, overrides) => {
+    setDb((prev) => updateAstronautInDb(prev, id, profile, overrides))
+  }, [])
+
+  // Remove an astronaut and their data. If it is the current user, the crew picker shows next.
+  const removeAstronaut = useCallback((id) => {
+    setDb((prev) => removeAstronautFromDb(prev, id))
+  }, [])
+
   const setEnvironment = useCallback((envId) => {
     setDb((prev) => {
       if (prev.settings.environment === envId) return prev
@@ -88,7 +108,7 @@ export function MissionProvider({ children }) {
 
   const resetDemo = useCallback(() => {
     setSensors(INITIAL_SENSORS)
-    // Demo reset keeps the custom astronaut profiles (their readings are cleared).
+    // Demo reset restores the 4 preset astronauts (undoing edits and removals) and keeps custom profiles (their readings are cleared).
     setDb((prev) => ({ ...createSeedDb(), astronauts: prev.astronauts ?? [] }))
   }, [])
 
@@ -123,6 +143,8 @@ export function MissionProvider({ children }) {
     addReading,
     selectAstronaut,
     addAstronaut,
+    updateAstronaut,
+    removeAstronaut,
     setEnvironment,
     setMissionDay,
     setStorm,
