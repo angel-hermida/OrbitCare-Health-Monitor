@@ -1,4 +1,5 @@
 // Preset crew for the demo. Names are invented.
+// Custom astronauts made in the app are stored in the db (see store/storage.js addAstronaut).
 // "baseline" = each astronaut's own pre-mission (Earth) readings.
 // The status engine compares every new reading against these.
 
@@ -10,6 +11,7 @@ export const CREW = [
     age: 41,
     gender: 'Female',
     weightKg: 63,
+    heightCm: 168,
     baseline: {
       heartRate: 62,
       bloodPressure: { systolic: 112, diastolic: 72 },
@@ -26,6 +28,7 @@ export const CREW = [
     age: 36,
     gender: 'Male',
     weightKg: 79,
+    heightCm: 180,
     baseline: {
       heartRate: 64,
       bloodPressure: { systolic: 118, diastolic: 76 },
@@ -42,6 +45,7 @@ export const CREW = [
     age: 38,
     gender: 'Female',
     weightKg: 58,
+    heightCm: 160,
     baseline: {
       heartRate: 63,
       bloodPressure: { systolic: 108, diastolic: 70 },
@@ -58,6 +62,7 @@ export const CREW = [
     age: 45,
     gender: 'Male',
     weightKg: 84,
+    heightCm: 182,
     baseline: {
       heartRate: 66,
       bloodPressure: { systolic: 118, diastolic: 76 },

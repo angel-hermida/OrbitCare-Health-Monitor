@@ -2,6 +2,7 @@
 // All numbers and wording come from data/thresholds.js. No medical content lives here.
 
 import { THRESHOLDS, SENSOR_THRESHOLDS } from '../data/thresholds.js'
+import { attentionProfile } from './personalize.js'
 
 const LEVELS = ['green', 'yellow', 'red']
 
@@ -33,7 +34,7 @@ export function getIndicatorRanges(type, levelIndex = 0) {
 }
 
 // Check one number. Returns { level: 0 | 1 | 2, side: 'Low' | 'High' | null }.
-function checkOne(value, def, baselineValue, levelIndex) {
+function checkOne(value, def, baselineValue, levelIndex, scale = 1) {
   const { green, yellow } = getRanges(def, levelIndex)
 
   // 1. Absolute safety limits
@@ -50,8 +51,9 @@ function checkOne(value, def, baselineValue, levelIndex) {
     const diff = value - baselineValue
     const ignore = def.baseline.direction === 'low' && diff > 0
     if (!ignore) {
-      if (Math.abs(diff) >= def.baseline.red) deviation = 2
-      else if (Math.abs(diff) >= def.baseline.yellow) deviation = 1
+      // scale < 1 = higher attention level for this astronaut (see engine/personalize.js)
+      if (Math.abs(diff) >= def.baseline.red * scale) deviation = 2
+      else if (Math.abs(diff) >= def.baseline.yellow * scale) deviation = 1
       if (deviation > 0 && !side) side = diff < 0 ? 'Low' : 'High'
     }
   }
@@ -69,17 +71,18 @@ export function getStatus(type, value, astronaut, missionState) {
   const def = THRESHOLDS[type]
   const levelIndex = missionState?.responseLevel?.index ?? 0
   const baseline = astronaut?.baseline?.[type]
+  const scale = astronaut ? attentionProfile(astronaut).scale : 1
 
   let result
   if (def.parts) {
     // Two-number indicators (blood pressure): the worse part decides.
     result = { level: 0, side: null }
     for (const key of Object.keys(def.parts)) {
-      const part = checkOne(value[key], def.parts[key], baseline?.[key], levelIndex)
+      const part = checkOne(value[key], def.parts[key], baseline?.[key], levelIndex, scale)
       if (part.level > result.level) result = part
     }
   } else {
-    result = checkOne(value, def, baseline, levelIndex)
+    result = checkOne(value, def, baseline, levelIndex, scale)
   }
 
   const level = LEVELS[result.level]

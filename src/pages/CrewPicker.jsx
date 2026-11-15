@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import Logo from '../components/Logo.jsx'
-import { CREW } from '../data/crew.js'
 import { useMission } from '../store/MissionContext.jsx'
+import NewProfile from './NewProfile.jsx'
 
 function PersonIcon() {
   return (
@@ -19,9 +20,13 @@ function Chevron() {
   )
 }
 
-// First screen: choose who is using the app.
+// First screen: choose who is using the app, or create a new astronaut profile.
+// `crew` = the 4 presets plus custom profiles, minus removed ones (store/storage.js allAstronauts).
 export default function CrewPicker() {
-  const { selectAstronaut } = useMission()
+  const { crew, selectAstronaut } = useMission()
+  const [creating, setCreating] = useState(false)
+
+  if (creating) return <NewProfile onCancel={() => setCreating(false)} />
 
   return (
     <div className="flex min-h-full flex-col bg-[#050b1f] text-white">
@@ -68,9 +73,9 @@ export default function CrewPicker() {
               </p>
             </div>
 
-            {/* Right: one card per crew member */}
+            {/* Right: one card per crew member, then "New astronaut" */}
             <ul className="space-y-5">
-              {CREW.map((astronaut) => (
+              {crew.map((astronaut) => (
                 <li key={astronaut.id}>
                   <button
                     type="button"
@@ -86,6 +91,19 @@ export default function CrewPicker() {
                   </button>
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setCreating(true)}
+                  className="group flex w-full cursor-pointer items-center gap-6 rounded-xl border-2 border-dashed border-white/50 px-8 py-4 text-left text-white transition hover:border-sky-400 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center text-3xl leading-none" aria-hidden="true">+</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-2xl font-bold">New astronaut</span>
+                    <span className="block text-sm text-slate-300">Enter name, age, gender, weight and height</span>
+                  </span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>
