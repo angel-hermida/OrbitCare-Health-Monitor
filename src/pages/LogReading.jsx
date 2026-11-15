@@ -1,3 +1,4 @@
+import CameraHeartRate from '../components/CameraHeartRate.jsx'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StatusPill } from '../components/StatusPill.jsx'
@@ -138,7 +139,7 @@ export default function LogReading() {
           </button>
         ))}
       </div>
-
+      <CameraHeartRate onUse={(bpm) => alert('Heart rate: ' + bpm)} />
       <form onSubmit={submit} className={`${CARD} space-y-5`}>
         <div className="flex items-baseline justify-between">
           <h2 className="text-xl font-bold uppercase tracking-wider text-white">{def.label}</h2>
