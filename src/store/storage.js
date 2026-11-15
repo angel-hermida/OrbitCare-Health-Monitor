@@ -4,7 +4,11 @@
 //     events:   [{ type: 'solarStorm' | 'co2Spike', timestamp }],
 //     symptoms: [{ astronautId, symptom, title, hazards, level, timestamp }],
 //     settings: { astronautId, environment, missionDay, environmentChangedAt },
+//     astronauts: [custom profiles made in the app; the 4 presets live in data/crew.js],
 //   }
+
+import { CREW } from '../data/crew.js'
+import { applyOverrides, estimateBaseline } from '../engine/personalize.js'
 
 const KEY = 'astrohealth.v1'
 
@@ -57,4 +61,32 @@ export function getReadings(db, astronautId, type) {
 export function latestReading(db, astronautId, type) {
   const list = getReadings(db, astronautId, type)
   return list.length ? list[list.length - 1] : null
+}
+
+// ----- astronaut profiles -----
+
+// Presets first, then custom ones. Older saved dbs have no `astronauts` field.
+export function allAstronauts(db) {
+  return [...CREW, ...(db.astronauts ?? [])]
+}
+
+export function findAstronaut(db, id) {
+  return allAstronauts(db).find((a) => a.id === id) || null
+}
+
+// profile: { name, role, age, gender, weightKg, heightCm, medical? }
+// overrides: baseline numbers the astronaut already knows (see engine/personalize.js applyOverrides).
+// Returns { db, astronaut }. The baseline starts as an estimate unless overridden.
+export function addAstronaut(db, profile, overrides = {}) {
+  const baseline = applyOverrides(estimateBaseline(profile), overrides)
+  const hasOverride = Object.values(overrides).some((v) => v !== '' && v != null)
+  const astronaut = {
+    ...profile,
+    id: `c-${Date.now().toString(36)}`,
+    custom: true,
+    baseline,
+    baselineSource: hasOverride ? 'partly entered' : 'estimated',
+    medical: { conditions: [], medications: [], allergies: [], notes: '', ...(profile.medical || {}) },
+  }
+  return { db: { ...db, astronauts: [...(db.astronauts ?? []), astronaut] }, astronaut }
 }

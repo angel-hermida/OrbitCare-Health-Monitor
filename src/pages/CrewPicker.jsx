@@ -1,9 +1,13 @@
-import { CREW } from '../data/crew.js'
+import { useState } from 'react'
 import { useMission } from '../store/MissionContext.jsx'
+import NewProfile from './NewProfile.jsx'
 
 // First screen: choose who is using the app.
 export default function CrewPicker() {
-  const { selectAstronaut } = useMission()
+  const { crew, selectAstronaut } = useMission()
+  const [creating, setCreating] = useState(false)
+
+  if (creating) return <NewProfile onCancel={() => setCreating(false)} />
 
   return (
     <div className="mx-auto flex min-h-full max-w-4xl flex-col justify-center p-8">
@@ -12,7 +16,7 @@ export default function CrewPicker() {
       <p className="mt-2 text-slate-300">Pick your profile. Your readings are compared with your own Earth baseline.</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {CREW.map((astronaut) => (
+        {crew.map((astronaut) => (
           <button
             key={astronaut.id}
             onClick={() => selectAstronaut(astronaut.id)}
@@ -21,10 +25,17 @@ export default function CrewPicker() {
             <p className="text-2xl font-semibold text-white">{astronaut.name}</p>
             <p className="mt-1 text-sky-300">{astronaut.role}</p>
             <p className="mt-2 text-sm text-slate-400">
-              {astronaut.age} · {astronaut.gender} · {astronaut.weightKg} kg
+              {astronaut.age} · {astronaut.gender} · {astronaut.weightKg} kg{astronaut.heightCm ? ` · ${astronaut.heightCm} cm` : ''}
             </p>
           </button>
         ))}
+        <button
+          onClick={() => setCreating(true)}
+          className="cursor-pointer rounded-xl border border-dashed border-slate-600 p-6 text-left text-sky-300 hover:border-sky-400 hover:bg-slate-800"
+        >
+          <p className="text-2xl font-semibold">+ New astronaut</p>
+          <p className="mt-1 text-sm text-slate-400">Enter name, age, gender, weight and height</p>
+        </button>
       </div>
 
       <p className="mt-10 text-center text-sm text-slate-400">Guidance tool. Does not replace flight surgeons.</p>
