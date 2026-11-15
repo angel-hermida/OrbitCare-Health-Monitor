@@ -65,6 +65,39 @@ export function latestReading(db, astronautId, type) {
   return list.length ? list[list.length - 1] : null
 }
 
+// ---------- Preferences ----------
+// Display choices, kept apart from the mission db so "Reset demo data" never clears them,
+// and so data saved before preferences existed keeps working (missing fields use the defaults).
+//   { theme: 'dark' | 'light', tempUnit: 'C' | 'F', alertSound: boolean, presenterVisible: boolean }
+
+const PREFS_KEY = 'orbitcare.preferences.v1'
+
+export const DEFAULT_PREFERENCES = {
+  theme: 'dark',
+  tempUnit: 'C',
+  alertSound: true,
+  presenterVisible: true,
+}
+
+export function loadPreferences() {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY)
+    const saved = raw ? JSON.parse(raw) : {}
+    return { ...DEFAULT_PREFERENCES, ...(saved && typeof saved === 'object' ? saved : {}) }
+  } catch {
+    return { ...DEFAULT_PREFERENCES }
+  }
+}
+
+export function savePreferences(prefs) {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))
+  } catch {
+    // Storage can be full or blocked. Preferences still apply for this session.
+  }
+  return prefs
+}
+
 // ----- astronaut profiles -----
 
 // Presets first, then custom ones. Removed presets are hidden, edited presets get their changes.

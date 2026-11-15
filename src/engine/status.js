@@ -102,19 +102,24 @@ export function getSensorStatus(key, value) {
   return { level, action: level === 'green' ? '' : def.actions[level] }
 }
 
-export function formatSensor(key, value) {
+// Display-only unit conversion. Everything is stored and checked in °C.
+export const toFahrenheit = (celsius) => (celsius * 9) / 5 + 32
+
+// tempUnit ('C' | 'F') only changes how a temperature is shown.
+export function formatSensor(key, value, tempUnit = 'C') {
   const def = SENSOR_THRESHOLDS[key]
+  if (key === 'temp' && tempUnit === 'F') return `${toFahrenheit(value).toFixed(def.decimals)} °F`
   return `${value.toFixed(def.decimals)} ${def.unit}`
 }
 
-// Human-readable value, e.g. "118/76 mmHg", "36.8 °C (98.2 °F)".
-export function formatValue(type, value) {
+// Human-readable value, e.g. "118/76 mmHg", "36.8 °C" or "98.2 °F".
+export function formatValue(type, value, tempUnit = 'C') {
   if (value == null) return '—'
   switch (type) {
     case 'bloodPressure':
       return `${value.systolic}/${value.diastolic} mmHg`
     case 'temperature':
-      return `${value.toFixed(1)} °C (${((value * 9) / 5 + 32).toFixed(1)} °F)`
+      return tempUnit === 'F' ? `${toFahrenheit(value).toFixed(1)} °F` : `${value.toFixed(1)} °C`
     case 'sleep':
       return `${value.toFixed(1)} h`
     case 'mood':

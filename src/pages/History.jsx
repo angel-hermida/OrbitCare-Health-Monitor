@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import TrendChart from '../components/TrendChart.jsx'
-import { H1 } from '../components/ui.js'
+import PageTitle from '../components/PageTitle.jsx'
 import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
-import { getIndicatorRanges } from '../engine/status.js'
+import { getIndicatorRanges, toFahrenheit } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
+import { usePreferences } from '../store/PreferencesContext.jsx'
 import { getReadings } from '../store/storage.js'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -13,6 +14,7 @@ const RANGES = [7, 30]
 // at the current response level, so they narrow as the mission moves away from Earth.
 export default function History() {
   const { db, astronaut, responseLevel } = useMission()
+  const { tempUnit } = usePreferences()
   const [days, setDays] = useState(30)
   const since = Date.now() - days * DAY
 
@@ -32,6 +34,16 @@ export default function History() {
           ranges: ranges[part],
         })
       }
+    } else if (type === 'temperature' && tempUnit === 'F') {
+      // Display-only: convert the points and the band limits to °F.
+      const f = (c) => (c == null ? null : Math.round(toFahrenheit(c) * 10) / 10)
+      charts.push({
+        key: type,
+        title: def.label,
+        unit: '°F',
+        points: readings.map((r) => ({ t: r.timestamp, value: f(r.value) })),
+        ranges: { green: ranges.green.map(f), yellow: ranges.yellow.map(f) },
+      })
     } else {
       charts.push({
         key: type,
@@ -46,9 +58,9 @@ export default function History() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className={H1}>Trends</h1>
-          <p className="mt-1 text-slate-300">
+        <div className="min-w-0 flex-1">
+          <PageTitle title="Health Trends" accent="Trends" />
+          <p className="mt-3 text-oc-gray">
             {astronaut.name} · green, yellow and red bands show the limits at the current response level ({responseLevel.label}).
           </p>
         </div>
@@ -57,7 +69,7 @@ export default function History() {
             <button
               key={option}
               onClick={() => setDays(option)}
-              className={`cursor-pointer rounded-lg border px-4 py-2 font-medium ${option === days ? 'border-sky-400 bg-sky-500/15 text-sky-300' : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+              className={`cursor-pointer rounded border px-4 py-2 text-sm font-semibold uppercase tracking-wider ${option === days ? 'border-oc-blue bg-oc-panel text-white' : 'border-oc-border/60 text-oc-gray hover:bg-oc-panel/40 hover:text-white'}`}
             >
               {option} days
             </button>

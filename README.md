@@ -4,7 +4,7 @@ Health monitoring software for astronauts. NASA Space Apps Challenge 2026.
 
 An offline-first web app that helps astronauts check their own health, understand each reading in plain language, and know what to do next, on a space station, a spacecraft, the Moon or Mars. It is organised around NASA's five hazards of human spaceflight (RIDGE): Radiation, Isolation, Distance, Gravity, Environment.
 
-"OrbitCare" is a placeholder name. To rename it, change `index.html`, `src/components/Layout.jsx` and `src/pages/CrewPicker.jsx`.
+The look follows `design/style-guide.webp` (colors, type, top bar, vital cards, buttons, pills, tables). The crew picker matches `design/crew-picker.webp`.
 
 ## Run it
 
@@ -28,14 +28,35 @@ React 19 + Vite, Tailwind CSS v4, Recharts, React Router (HashRouter). All data 
 | Crew profiles (4 preset astronauts with Earth baselines) | first screen, `/profile` |
 | Log 6 indicators by hand | `/log` |
 | Green / yellow / red status + plain sentence + next step | dashboard, log result |
+| Daily check-in: old readings show as DUE, with today's progress | dashboard |
 | How-to-measure guides | `/guides` |
-| Location + mission day → delay to Earth → response level | `/settings` (the D page) |
+| Location picker | `/mission` (Mission setup) |
+| Delay to Earth → response level, and how the levels work | `/distance` (the D page) |
 | Limits get stricter as the response level rises | status engine |
 | Symptom checker (headache is complete, 4 others are stubs) | `/symptoms` |
 | Emergency mode with 5 scenarios and a report to ground | `/emergency` |
-| Simulated cabin + radiation sensors, with demo switches | Habitat panel, `/settings` |
-| 30 days of demo history, with a reset button | loads on first run |
+| Simulated cabin + radiation sensors | Habitat panel (dashboard, `/environment`) |
+| Demo controls: mission day, solar storm, CO₂ spike, reset | Presenter panel (button bottom right, Shift+P hides it) |
+| Theme (dark / light), °C / °F, alert sound | `/settings` |
+| 30 days of demo history | loads on first run, reset from the Presenter panel |
 | Trend charts with colored range bands | `/history` |
+
+### Routes
+
+| Route | Page | Sidebar group |
+|---|---|---|
+| `/` | Dashboard | Health |
+| `/log` | Log a reading (`?type=sleep` preselects) | Health |
+| `/symptoms` | Symptom checker | Health |
+| `/history` | Trends | Health |
+| `/guides` | How to measure (`#sleep` scrolls) | Health |
+| `/radiation`, `/isolation`, `/distance`, `/gravity`, `/environment` | RIDGE hazard pages | Hazards |
+| `/mission` | Mission setup (location) | Mission |
+| `/settings` | Settings (theme, units, alerts, about) | System (pinned bottom) |
+| `/profile` | My profile | Crew (pinned bottom) |
+| `/emergency` | Emergency mode (full screen, no sidebar) | top bar button |
+
+In the top bar, LOCATION opens `/mission` and the response level badge opens `/distance`.
 
 ## File structure
 
@@ -53,9 +74,11 @@ src/
     symptomTrees.js        symptom checker decision trees
     environments.js        ISS / spacecraft / Moon / Mars: gravity, context, shelter advice
     hazards.js             the RIDGE letters, names and page links
+    checkin.js             how often each indicator should be measured (hours)
 
   engine/                  LOGIC. No React in here.
-    status.js              getStatus(): value -> level, message, action. Also formatting.
+    status.js              getStatus(): value -> level, message, action. Also formatting (°C / °F).
+    checkin.js             getFreshness() and getTodayProgress() for the daily check-in
     responseLevel.js       delay to Earth and the four response levels
     symptomRunner.js       data checks + tree walking for the symptom checker
     sensors.js             simulated sensor loop
@@ -64,23 +87,47 @@ src/
     time.js                date helpers
 
   store/
-    storage.js             the only file that touches localStorage. addReading() lives here.
-    MissionContext.jsx     global state. Components call useMission().
+    storage.js             the only file that touches localStorage. addReading() and the
+                           preferences section (loadPreferences / savePreferences) live here.
+    MissionContext.jsx     global mission state. Components call useMission().
+    PreferencesContext.jsx theme, temperature unit, alert sound, presenter button. usePreferences().
 
   components/              reusable UI
-    Layout.jsx             sidebar, top banner, emergency button, disclaimer
-    StatusCard.jsx         one indicator card on the dashboard
-    StatusPill.jsx         OK / CAUTION / ALERT label, and RIDGE hazard tags
+    Layout.jsx             sidebar, top bar, emergency button, disclaimer, Presenter panel
+    Logo.jsx               OrbitCare wordmark (SVG)
+    PageTitle.jsx          section title: bold, one red word, thin blue rule
+    PresenterPanel.jsx     floating demo controls (mission day, storm, CO₂, reset)
+    Segmented.jsx          segmented toggle used on Settings
+    StatusCard.jsx         one indicator card on the dashboard (incl. the DUE state)
+    StatusPill.jsx         OK / CAUTION / ALERT / DUE label, and RIDGE hazard tags
     HabitatPanel.jsx       live sensor list
     TreeRunner.jsx         runs any symptom tree
     TrendChart.jsx         line chart with colored bands
     StubPage.jsx           frame for pages that are not built yet
+    RadiationAlertSound.jsx  beeps once when radiation turns red (if sound is on)
+    alertSound.js          the beep (Web Audio API, no files)
     ui.js                  shared Tailwind class strings and status colors
 
   pages/                   one file per screen
-    CrewPicker, Dashboard, LogReading, Guides, SymptomChecker, Emergency,
-    History, Profile, Settings (= Distance), Radiation, Isolation, Gravity, Environment
+    CrewPicker, Dashboard, LogReading, Guides, SymptomChecker, Emergency, History,
+    Profile, Settings, MissionSetup, Distance, Radiation, Isolation, Gravity, Environment
 ```
+
+### Daily check-in
+
+- Each indicator has a check interval in `data/checkin.js` (24 hours for all six today).
+- `engine/checkin.js` → `getFreshness(reading, type, now)` says whether the latest reading is older than its interval (`due`), and `getTodayProgress(db, astronautId, now)` counts how many are fresh.
+- On the dashboard a due (or missing) reading shows a gray **DUE** card: "Not measured today", the last value and its age, and a **Log now** button. A due reading never shows OK, and it does not count toward the green / yellow / red summary. The top shows "Today's check-in: X of 6 done" and the summary line counts the checks due.
+- Old readings are kept. Trends, Profile and the Report to Ground still use the full history (the report shows each value's age).
+
+### Preferences
+
+Saved in `localStorage` under their own key (`orbitcare.preferences.v1`) through `store/storage.js`, separate from mission data, so **Reset demo data** never clears them and data saved before preferences existed keeps working.
+
+- **Theme**: `<html data-theme="dark|light">`. Only elements inside `.oc-app` follow it (see `index.css`); the top bar and Emergency mode use `.oc-dark` to stay dark, and the crew picker is outside `.oc-app` so it never changes.
+- **Temperature unit**: display only. Readings, thresholds and the status engine stay in °C; `formatValue` / `formatSensor` take an optional unit.
+- **Alert sound**: a short beep when a newly logged reading is red, and once each time radiation turns red.
+- **Presenter button**: Shift+P shows / hides it.
 
 ## How data flows
 
@@ -137,17 +184,20 @@ The delay model is simple on purpose. Spacecraft: grows in a straight line to 20
 
 Demo data is the same after every reset. Planted events:
 
-- **Maya Okafor**: everything green.
+- **Maya Okafor**: everything green, but blood sugar and temperature were last logged 2 days ago, so they show as DUE (check-in 4 of 6).
 - **Daniel Reyes**: three short nights, so sleep is yellow. Headache → "poor sleep or low mood".
 - **Aiko Tanaka**: low mood for four days, so mood is yellow.
 - **Sam Whitfield**: a two-day mild fever about 11 days ago, visible on the temperature chart.
 
+All demo controls are in the **Presenter panel**: the small "Presenter" button at the bottom right of every page (not on the crew picker or in Emergency mode). Shift+P hides or shows the button.
+
 Good moments to show:
 
-1. **E**: Distance page → Trigger CO₂ spike → wait about 8 seconds → Symptom checker → Headache. It finds the CO₂ by itself.
-2. **D**: Distance page → Mars base → drag the mission day to 390. The banner switches to "Fully autonomous" and the limits tighten (watch the bands on the Trends page).
-3. **R**: Trigger solar storm → the Habitat panel turns red with shelter advice for the current location → Emergency → Radiation storm.
+1. **E**: Presenter panel → Trigger CO₂ spike → wait about 8 seconds → Symptom checker → Headache. It finds the CO₂ by itself.
+2. **D**: Mission setup → Mars base → Presenter panel → drag the mission day to 390. The top bar switches to "Fully autonomous" and the limits tighten (watch the bands on the Trends page).
+3. **R**: Presenter panel → Trigger solar storm → the Habitat panel turns red with shelter advice for the current location → Emergency → Radiation storm.
 4. **Report**: finish any emergency to see the packaged report and the reply estimate.
+5. **Check-in**: Maya's dashboard → a DUE card → Log now → back to the dashboard: the card turns green and the check-in count goes up.
 
 ## Custom astronaut profiles (branch `feature/custom-astronaut-profiles`)
 
@@ -190,7 +240,7 @@ Next: learn baselines from the first week of real readings, let conditions adjus
 ### Not built yet
 
 - [ ] Simulated wearable ("Connect device" toggle that calls `addReading` with `source: 'device'`).
-- [ ] Measurement reminders on a schedule.
+- [ ] Measurement reminders on a schedule (the dashboard already shows which checks are due).
 - [ ] Sensor history. Sensors only keep their current value, so the app cannot yet say "high for 6 hours".
 - [ ] Crew alert is only a banner in Emergency mode. Nothing is sent to other profiles.
 - [ ] Body map, streaks and points, camera input.

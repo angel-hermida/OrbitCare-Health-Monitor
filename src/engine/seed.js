@@ -2,6 +2,7 @@
 // Uses a fixed random seed, so the story is the same every time you reset.
 //
 // Planted events (use these in the demo):
+//   Maya Okafor   (a1): blood sugar and temperature last logged 2 days ago -> shown as DUE
 //   Daniel Reyes  (a2): three short nights in a row, ending last night  -> sleep is yellow
 //   Aiko Tanaka   (a3): low mood for the last four days                 -> mood is yellow
 //   Sam Whitfield (a4): a two-day mild fever about 11 days ago          -> visible on the chart
@@ -75,6 +76,9 @@ export function createSeedDb(now = Date.now()) {
       ]
 
       for (const [type, value, extra] of day) {
+        // Maya: blood sugar and temperature last logged 2 days ago, so the dashboard shows them as DUE.
+        // (Values are still generated above, so the random sequence and all other data stay the same.)
+        if (astronaut.id === 'a1' && daysAgo <= 1 && (type === 'bloodSugar' || type === 'temperature')) continue
         db = addReading(db, { astronautId: astronaut.id, type, value, source: 'manual', timestamp, extra })
       }
     }

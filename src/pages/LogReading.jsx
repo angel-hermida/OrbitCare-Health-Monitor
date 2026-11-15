@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StatusPill } from '../components/StatusPill.jsx'
-import { BTN, BTN_DANGER, BTN_PRIMARY, CARD, H1, INPUT, STATUS } from '../components/ui.js'
+import PageTitle from '../components/PageTitle.jsx'
+import { BTN, BTN_DANGER, BTN_PRIMARY, CARD, INPUT, LABEL, STATUS } from '../components/ui.js'
 import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
 import { formatValue, getStatus } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
+import { usePreferences } from '../store/PreferencesContext.jsx'
+import { playAlertBeep } from '../components/alertSound.js'
 
 const EMPTY_FIELDS = {
   heartRate: '',
@@ -67,9 +70,9 @@ function buildReading(type, f) {
 function Slider({ label, low, high, value, onChange }) {
   return (
     <label className="block">
-      <span className="flex justify-between text-slate-200">
+      <span className="flex justify-between text-white">
         <span>{label}</span>
-        <span className="font-bold text-white">{value} / 5</span>
+        <span className="font-mono font-medium text-white">{value} / 5</span>
       </span>
       <input type="range" min="1" max="5" step="1" value={value} onChange={(e) => onChange(e.target.value)} className="mt-2 w-full" />
       <span className="flex justify-between text-xs text-slate-400">
@@ -82,9 +85,12 @@ function Slider({ label, low, high, value, onChange }) {
 
 export default function LogReading() {
   const { astronaut, missionState, addReading } = useMission()
+  const { tempUnit, alertSound } = usePreferences()
   const [params] = useSearchParams()
   const [type, setType] = useState(INDICATOR_ORDER.includes(params.get('type')) ? params.get('type') : 'heartRate')
-  const [fields, setFields] = useState(EMPTY_FIELDS)
+  // The temperature field starts in the unit chosen in Settings.
+  const emptyFields = { ...EMPTY_FIELDS, tempUnit }
+  const [fields, setFields] = useState(emptyFields)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(null) // { type, value, status }
 
@@ -109,16 +115,18 @@ export default function LogReading() {
     }
     // Every reading goes through addReading (see store/storage.js).
     addReading({ astronautId: astronaut.id, type, value: built.value, source: 'manual', extra: built.extra })
-    setSaved({ type, value: built.value, status: getStatus(type, built.value, astronaut, missionState) })
+    const status = getStatus(type, built.value, astronaut, missionState)
+    setSaved({ type, value: built.value, status })
+    if (status.level === 'red' && alertSound) playAlertBeep()
     setError('')
-    setFields(EMPTY_FIELDS)
+    setFields(emptyFields)
   }
 
   const def = THRESHOLDS[type]
 
   return (
     <div className="max-w-3xl space-y-5">
-      <h1 className={H1}>Log a reading</h1>
+      <PageTitle title="Log a Reading" accent="Reading" />
 
       {/* Pick the indicator */}
       <div className="flex flex-wrap gap-2">
@@ -126,7 +134,7 @@ export default function LogReading() {
           <button
             key={key}
             onClick={() => chooseType(key)}
-            className={`cursor-pointer rounded-lg border px-4 py-2 font-medium ${key === type ? 'border-sky-400 bg-sky-500/15 text-sky-300' : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+            className={`cursor-pointer rounded border px-4 py-2 text-sm font-semibold uppercase tracking-wider ${key === type ? 'border-oc-blue bg-oc-panel text-white' : 'border-oc-border/60 text-oc-gray hover:bg-oc-panel/40 hover:text-white'}`}
           >
             {THRESHOLDS[key].label}
           </button>
@@ -135,13 +143,13 @@ export default function LogReading() {
 
       <form onSubmit={submit} className={`${CARD} space-y-5`}>
         <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-semibold text-white">{def.label}</h2>
-          <Link to={`/guides#${type}`} className="text-sm font-semibold text-sky-400 hover:text-sky-300">How do I measure this?</Link>
+          <h2 className="text-xl font-bold uppercase tracking-wider text-white">{def.label}</h2>
+          <Link to={`/guides#${type}`} className="text-sm font-semibold text-oc-blue hover:underline">How do I measure this?</Link>
         </div>
 
         {type === 'heartRate' && (
           <label className="block">
-            <span className="text-slate-200">Beats per minute (bpm)</span>
+            <span className={LABEL}>Beats per minute (bpm)</span>
             <input className={`${INPUT} mt-1`} inputMode="numeric" placeholder="e.g. 62" value={fields.heartRate} onChange={set('heartRate')} autoFocus />
           </label>
         )}
@@ -149,11 +157,11 @@ export default function LogReading() {
         {type === 'bloodPressure' && (
           <div className="grid grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-slate-200">Top number (systolic)</span>
+              <span className={LABEL}>Top number (systolic)</span>
               <input className={`${INPUT} mt-1`} inputMode="numeric" placeholder="e.g. 118" value={fields.systolic} onChange={set('systolic')} autoFocus />
             </label>
             <label className="block">
-              <span className="text-slate-200">Bottom number (diastolic)</span>
+              <span className={LABEL}>Bottom number (diastolic)</span>
               <input className={`${INPUT} mt-1`} inputMode="numeric" placeholder="e.g. 76" value={fields.diastolic} onChange={set('diastolic')} />
             </label>
           </div>
@@ -161,7 +169,7 @@ export default function LogReading() {
 
         {type === 'bloodSugar' && (
           <label className="block">
-            <span className="text-slate-200">Blood sugar (mg/dL)</span>
+            <span className={LABEL}>Blood sugar (mg/dL)</span>
             <input className={`${INPUT} mt-1`} inputMode="numeric" placeholder="e.g. 90" value={fields.bloodSugar} onChange={set('bloodSugar')} autoFocus />
           </label>
         )}
@@ -169,11 +177,11 @@ export default function LogReading() {
         {type === 'temperature' && (
           <div className="grid grid-cols-[1fr_auto] gap-4">
             <label className="block">
-              <span className="text-slate-200">Temperature</span>
+              <span className={LABEL}>Temperature</span>
               <input className={`${INPUT} mt-1`} inputMode="decimal" placeholder={fields.tempUnit === 'C' ? 'e.g. 36.8' : 'e.g. 98.2'} value={fields.temperature} onChange={set('temperature')} autoFocus />
             </label>
             <label className="block">
-              <span className="text-slate-200">Unit</span>
+              <span className={LABEL}>Unit</span>
               <select className={`${INPUT} mt-1`} value={fields.tempUnit} onChange={set('tempUnit')}>
                 <option value="C">°C</option>
                 <option value="F">°F</option>
@@ -185,11 +193,11 @@ export default function LogReading() {
         {type === 'sleep' && (
           <div className="grid grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-slate-200">Went to sleep at</span>
+              <span className={LABEL}>Went to sleep at</span>
               <input type="time" className={`${INPUT} mt-1`} value={fields.bed} onChange={set('bed')} />
             </label>
             <label className="block">
-              <span className="text-slate-200">Woke up at</span>
+              <span className={LABEL}>Woke up at</span>
               <input type="time" className={`${INPUT} mt-1`} value={fields.wake} onChange={set('wake')} />
             </label>
           </div>
@@ -204,21 +212,21 @@ export default function LogReading() {
           </div>
         )}
 
-        {error && <p className="rounded-lg border border-red-500/60 bg-red-500/10 px-3 py-2 text-red-300">{error}</p>}
+        {error && <p className="rounded border border-oc-alert/70 bg-oc-alert/10 px-3 py-2 text-white">{error}</p>}
 
-        <button type="submit" className={`${BTN_PRIMARY} px-8 py-3 text-lg`}>Save reading</button>
+        <button type="submit" className={`${BTN_PRIMARY} px-8 py-3 text-base`}>Save reading</button>
       </form>
 
       {/* Result of the reading that was just saved */}
       {saved && (
-        <section className={`rounded-xl border p-5 ${STATUS[saved.status.level].border} ${STATUS[saved.status.level].bg}`}>
+        <section className={`rounded border p-5 ${STATUS[saved.status.level].border} ${STATUS[saved.status.level].bg}`}>
           <div className="flex items-center gap-3">
             <StatusPill level={saved.status.level} />
-            <span className="text-slate-300">{THRESHOLDS[saved.type].label} saved</span>
+            <span className={LABEL}>{THRESHOLDS[saved.type].label} saved</span>
           </div>
-          <p className={`mt-2 text-3xl font-bold ${STATUS[saved.status.level].text}`}>{formatValue(saved.type, saved.value)}</p>
-          <p className="mt-2 text-lg text-slate-100">{saved.status.message}</p>
-          <p className="mt-2 text-slate-200">
+          <p className={`mt-3 font-mono text-4xl font-medium ${STATUS[saved.status.level].text}`}>{formatValue(saved.type, saved.value, tempUnit)}</p>
+          <p className="mt-3 text-lg text-white">{saved.status.message}</p>
+          <p className="mt-2 border-t border-white/20 pt-2 text-white/90">
             <span className="font-semibold text-white">Next step: </span>
             {saved.status.action}
           </p>

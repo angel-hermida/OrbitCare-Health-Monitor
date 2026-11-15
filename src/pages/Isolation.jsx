@@ -13,7 +13,8 @@ export default function Isolation() {
   return (
     <StubPage
       letter="I"
-      title="Isolation and confinement"
+      title="Isolation and Confinement"
+      accent="Isolation"
       intro="Months in a small space, far from family, wear people down. The app tracks mood every day and keeps home close."
       todo={[
         'Memory bank: family photos, video and voice messages, with a new drop every month',
@@ -28,8 +29,8 @@ export default function Isolation() {
         <div className="mt-3 flex items-end gap-2">
           {moods.map((reading) => (
             <div key={reading.id} className="flex flex-col items-center gap-1">
-              <div className={`w-10 rounded-t ${reading.value <= 2 ? 'bg-amber-300' : 'bg-emerald-400'}`} style={{ height: `${reading.value * 14}px` }} />
-              <span className="text-sm text-slate-300">{reading.value}</span>
+              <div className={`w-10 rounded-t-sm ${reading.value <= 2 ? 'bg-oc-yellow' : 'bg-oc-green'}`} style={{ height: `${reading.value * 14}px` }} />
+              <span className="font-mono text-sm text-oc-gray">{reading.value}</span>
             </div>
           ))}
         </div>
