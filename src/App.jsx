@@ -18,6 +18,7 @@ import Isolation from './pages/Isolation.jsx'
 import LogReading from './pages/LogReading.jsx'
 import MissionSetup from './pages/MissionSetup.jsx'
 import Profile from './pages/Profile.jsx'
+import Records from './pages/Records.jsx'
 import Radiation from './pages/Radiation.jsx'
 import Settings from './pages/Settings.jsx'
 import SymptomChecker from './pages/SymptomChecker.jsx'
@@ -92,6 +93,7 @@ function MainApp() {
           <Route path="/log" element={<LogReading />} />
           <Route path="/symptoms" element={<SymptomChecker />} />
           <Route path="/history" element={<History />} />
+          <Route path="/records" element={<Records />} />
           <Route path="/guides" element={<Guides />} />
           <Route path="/radiation" element={<Radiation />} />
           <Route path="/isolation" element={<Isolation />} />
