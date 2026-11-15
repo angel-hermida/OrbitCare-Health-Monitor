@@ -6,6 +6,7 @@ import { BTN, BTN_DANGER, BTN_OUTLINE, CARD, H2, LABEL, TABLE, TD, TH } from '..
 import { INDICATOR_ORDER, THRESHOLDS } from '../data/thresholds.js'
 import { attentionProfile, bmi } from '../engine/personalize.js'
 import { formatValue, getStatus } from '../engine/status.js'
+import { getStreaks } from '../engine/streaks.js'
 import { timeAgo } from '../engine/time.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { usePreferences } from '../store/PreferencesContext.jsx'
@@ -21,6 +22,7 @@ export default function Profile() {
   const body = bmi(astronaut)
   const medical = astronaut.medical || {}
   const readingCount = getReadings(db, astronaut.id).length
+  const streak = getStreaks(db, astronaut.id)
   const listText = (arr) => (arr?.length ? arr.join(', ') : 'None recorded')
 
   if (mode === 'edit') {
@@ -81,6 +83,21 @@ export default function Profile() {
             <p className="mt-1 font-mono text-2xl text-white">{value}</p>
           </div>
         ))}
+      </section>
+
+      {/* Daily check-in streak (information only) */}
+      <section className={`${CARD} grid grid-cols-2 gap-4 sm:grid-cols-5`}>
+        <div>
+          <p className={LABEL}>Current streak</p>
+          <p className="mt-1 font-mono text-2xl text-white">{streak.current} {streak.current === 1 ? 'day' : 'days'}</p>
+        </div>
+        <div>
+          <p className={LABEL}>Best streak</p>
+          <p className="mt-1 font-mono text-2xl text-white">{streak.best} {streak.best === 1 ? 'day' : 'days'}</p>
+        </div>
+        <p className="col-span-2 self-center text-sm text-oc-gray sm:col-span-3">
+          {streak.todayComplete ? 'Today’s check-in is complete.' : 'Complete today’s check-in to keep the streak.'} A day counts when all six indicators are logged.
+        </p>
       </section>
 
       <div className="grid gap-5 md:grid-cols-2">

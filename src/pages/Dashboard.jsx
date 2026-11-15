@@ -6,6 +6,7 @@ import { StaggerItem } from '../components/motion.jsx'
 import { BTN_OUTLINE, BTN_PRIMARY, CARD, LABEL } from '../components/ui.js'
 import { INDICATOR_ORDER } from '../data/thresholds.js'
 import { getFreshness, getTodayProgress } from '../engine/checkin.js'
+import { getStreaks, streakLabel } from '../engine/streaks.js'
 import { getStatus } from '../engine/status.js'
 import { useMission } from '../store/MissionContext.jsx'
 import { latestReading } from '../store/storage.js'
@@ -18,6 +19,20 @@ const STRIP = {
   yellow: { box: 'border-oc-yellow bg-oc-yellow/10', icon: 'bg-oc-yellow text-oc-navy', glyph: '!', text: 'text-oc-yellow' },
   due: { box: 'border-oc-border/70 bg-oc-panel/40', icon: 'bg-oc-silver text-oc-navy', glyph: '◷', text: 'text-white' },
   green: { box: 'border-oc-green/60 bg-oc-green/10', icon: 'bg-oc-green text-oc-paper', glyph: '✓', text: 'text-white' },
+}
+
+// Check-in streak, right side of the status strip. Informational only.
+function StreakBadge({ streak }) {
+  return (
+    <p className="ml-auto flex items-center gap-2 text-sm text-white/90" title={`Best streak: ${streak.best} days`}>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-oc-blue" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4" />
+      </svg>
+      <span className="font-semibold">{streakLabel(streak.current)}</span>
+      {!streak.todayComplete && <span className="text-oc-gray">· Complete today’s check-in to keep it</span>}
+    </p>
+  )
 }
 
 // One-line summary from the real readings and the daily check-in.
@@ -45,6 +60,7 @@ export default function Dashboard() {
   })
 
   const progress = getTodayProgress(db, astronaut.id, now)
+  const streak = getStreaks(db, astronaut.id, now)
   const strip = stripState(cards, progress)
   const style = STRIP[strip.state]
 
@@ -72,6 +88,7 @@ export default function Dashboard() {
             <span className={style.text}>{strip.text}</span>
             <span className="text-white"> · {strip.checks}</span>
           </p>
+          <StreakBadge streak={streak} />
         </div>
         <div
           className="absolute bottom-0 left-0 h-[3px] bg-oc-blue/70 transition-[width] duration-300 ease-out"

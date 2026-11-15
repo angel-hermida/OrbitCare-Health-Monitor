@@ -99,7 +99,7 @@ const PREFS_KEY = 'orbitcare.preferences.v1'
 export const DEFAULT_PREFERENCES = {
   theme: 'dark',
   tempUnit: 'C',
-  alertSound: true,
+  alertSound: true, // Settings > Master alarm sound (the red bar shows either way)
   presenterVisible: true,
   animations: true, // page transitions, startup screen, micro-animations (see components/motion.jsx)
 }

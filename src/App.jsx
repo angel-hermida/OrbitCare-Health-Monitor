@@ -3,7 +3,8 @@ import { useCallback, useRef, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import { DURATION, useAnimationsEnabled } from './components/motion.jsx'
-import RadiationAlertSound from './components/RadiationAlertSound.jsx'
+import MasterAlarm from './components/MasterAlarm.jsx'
+import StreakToast from './components/StreakToast.jsx'
 import StartupScreen from './components/StartupScreen.jsx'
 import CrewPicker from './pages/CrewPicker.jsx'
 import Dashboard from './pages/Dashboard.jsx'
@@ -71,9 +72,17 @@ function CrewPickerWithTransition() {
 }
 
 function MainApp() {
+  const { astronaut } = useMission()
+  // While the app fades out after "switch" there is no astronaut any more: render nothing,
+  // so no page tries to read the old crew member (and the master alarm stops at once).
+  if (!astronaut) return null
   return (
     <SpaceWeatherProvider>
-      <RadiationAlertSound />
+      <StreakToast />
+      {/* Master alarm bar above every page (including Emergency mode); the page fills the rest. */}
+      <div className="flex h-full flex-col">
+        <MasterAlarm />
+        <div className="min-h-0 flex-1 overflow-auto">
       <Routes>
         {/* Emergency mode takes over the whole screen (no sidebar) and opens instantly (no transition). */}
         <Route path="/emergency" element={<Emergency />} />
@@ -95,6 +104,8 @@ function MainApp() {
           <Route path="*" element={<Dashboard />} />
         </Route>
       </Routes>
+        </div>
+      </div>
     </SpaceWeatherProvider>
   )
 }
