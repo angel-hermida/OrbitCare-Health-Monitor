@@ -27,11 +27,11 @@ export const THRESHOLDS = {
     source: '',
     input: { min: 20, max: 250, step: 1 },
     text: {
-      green: { message: 'Your resting heart rate is normal for you.', action: 'No action needed. Keep up your regular checks.' },
-      yellowLow: { message: 'Your heart rate is lower than usual for you.', action: 'Rest for 10 minutes, then measure again. Note any dizziness.' },
-      yellowHigh: { message: 'Your heart rate is higher than usual for you.', action: 'Sit still, breathe slowly for 10 minutes, drink water, then measure again.' },
-      redLow: { message: 'Your heart rate is far below a safe resting level.', action: 'Stop what you are doing, stay restrained and tell a crewmate now.' },
-      redHigh: { message: 'Your heart rate is far above a safe resting level.', action: 'Stop all activity, stay still and tell a crewmate now.' },
+      green: { message: 'Resting heart rate within your normal range.', action: 'No action required. Continue scheduled checks.' },
+      yellowLow: { message: 'Heart rate below your normal range.', action: 'Rest 10 min, then re-measure. Report any dizziness.' },
+      yellowHigh: { message: 'Heart rate above your normal range.', action: 'Stay still 10 min. Breathe slowly. Drink water. Re-measure.' },
+      redLow: { message: 'Heart rate far below a safe resting level.', action: 'Stop activity. Stay restrained. Notify the crew medical officer (CMO) now.' },
+      redHigh: { message: 'Heart rate far above a safe resting level.', action: 'Stop all activity. Stay restrained. Notify the crew medical officer (CMO) now.' },
     },
   },
 
@@ -59,11 +59,11 @@ export const THRESHOLDS = {
     source: '',
     input: { min: 40, max: 260, step: 1 },
     text: {
-      green: { message: 'Your blood pressure is normal for you.', action: 'No action needed. Keep up your regular checks.' },
-      yellowLow: { message: 'Your blood pressure is lower than usual for you.', action: 'Drink water, move slowly when you change position, and measure again in 30 minutes.' },
-      yellowHigh: { message: 'Your blood pressure is higher than usual for you.', action: 'Rest quietly for 15 minutes, skip caffeine and salty food, then measure again.' },
-      redLow: { message: 'Your blood pressure is dangerously low.', action: 'Lie flat or stay restrained, do not move around alone, and tell a crewmate now.' },
-      redHigh: { message: 'Your blood pressure is dangerously high.', action: 'Stop all activity, rest, and tell a crewmate now. Watch for chest pain, bad headache or vision changes.' },
+      green: { message: 'Blood pressure within your normal range.', action: 'No action required. Continue scheduled checks.' },
+      yellowLow: { message: 'Blood pressure below your normal range.', action: 'Drink water. Change position slowly. Re-measure in 30 min.' },
+      yellowHigh: { message: 'Blood pressure above your normal range.', action: 'Rest 15 min. No caffeine or salty food. Re-measure.' },
+      redLow: { message: 'Blood pressure dangerously low.', action: 'Stay restrained. Do not move around alone. Notify the crew medical officer (CMO) now.' },
+      redHigh: { message: 'Blood pressure dangerously high.', action: 'Stop all activity and rest. Notify the crew medical officer (CMO) now. Report chest pain, severe headache or vision changes.' },
     },
   },
 
@@ -78,11 +78,11 @@ export const THRESHOLDS = {
     source: '',
     input: { min: 20, max: 600, step: 1 },
     text: {
-      green: { message: 'Your blood sugar is in the normal range.', action: 'No action needed. Eat your planned meals on schedule.' },
-      yellowLow: { message: 'Your blood sugar is a little low.', action: 'Eat or drink something with sugar now, then measure again in 15 minutes.' },
-      yellowHigh: { message: 'Your blood sugar is a little high.', action: 'Drink water, note what you ate, and measure again before your next meal.' },
-      redLow: { message: 'Your blood sugar is dangerously low.', action: 'Take fast sugar (juice or glucose) right away and tell a crewmate now.' },
-      redHigh: { message: 'Your blood sugar is dangerously high.', action: 'Drink water, do not exercise, and tell a crewmate now.' },
+      green: { message: 'Blood sugar within normal range.', action: 'No action required. Eat meals on schedule.' },
+      yellowLow: { message: 'Blood sugar below normal.', action: 'Take a sugary food or drink now. Re-measure in 15 min.' },
+      yellowHigh: { message: 'Blood sugar above normal.', action: 'Drink water. Log what you ate. Re-measure before the next meal.' },
+      redLow: { message: 'Blood sugar dangerously low.', action: 'Take glucose gel now. Notify the crew medical officer (CMO) now.' },
+      redHigh: { message: 'Blood sugar dangerously high.', action: 'Drink water. No exercise. Notify the crew medical officer (CMO) now.' },
     },
   },
 
@@ -97,11 +97,11 @@ export const THRESHOLDS = {
     source: '',
     input: { min: 30, max: 43, step: 0.1 },
     text: {
-      green: { message: 'Your temperature is normal.', action: 'No action needed.' },
-      yellowLow: { message: 'Your temperature is a little low.', action: 'Put on a warm layer, have a warm drink, and measure again in 30 minutes.' },
-      yellowHigh: { message: 'You have a mild fever.', action: 'Rest, drink water, keep your distance from crewmates, and measure again in 2 hours.' },
-      redLow: { message: 'Your temperature is dangerously low.', action: 'Warm up with layers and blankets now and tell a crewmate.' },
-      redHigh: { message: 'You have a high fever.', action: 'Rest, drink fluids, cool down, and tell a crewmate now.' },
+      green: { message: 'Body temperature normal.', action: 'No action required.' },
+      yellowLow: { message: 'Body temperature below normal.', action: 'Add a warm layer. Take a warm drink. Re-measure in 30 min.' },
+      yellowHigh: { message: 'Mild fever.', action: 'Rest. Drink water. Limit contact with the crew. Re-measure in 2 h.' },
+      redLow: { message: 'Body temperature dangerously low.', action: 'Warm up with layers and blankets now. Notify the crew medical officer (CMO).' },
+      redHigh: { message: 'High fever.', action: 'Rest. Drink fluids. Cool down. Notify the crew medical officer (CMO) now.' },
     },
   },
 
@@ -116,11 +116,11 @@ export const THRESHOLDS = {
     source: '',
     input: { min: 0, max: 24, step: 0.1 },
     text: {
-      green: { message: 'You got enough sleep.', action: 'No action needed. Keep the same bedtime tonight.' },
-      yellowLow: { message: 'You slept less than you need.', action: 'Skip caffeine after midday, dim the lights an hour before bed, and protect tonight’s sleep.' },
-      yellowHigh: { message: 'You slept more than usual.', action: 'Check how you feel today. Long sleep can be a sign of illness or low mood.' },
-      redLow: { message: 'You are badly short on sleep.', action: 'Do not do risky tasks alone today. Tell the commander so your schedule can be adjusted.' },
-      redHigh: { message: 'You slept far more than usual.', action: 'Tell a crewmate and check your other vitals today.' },
+      green: { message: 'Sleep sufficient.', action: 'No action required. Keep the same sleep time tonight.' },
+      yellowLow: { message: 'Sleep below requirement.', action: 'No caffeine after midday. Dim lights 1 h before sleep. Protect tonight’s sleep period.' },
+      yellowHigh: { message: 'Sleep longer than usual.', action: 'Monitor how you feel today. Long sleep can indicate illness or low mood.' },
+      redLow: { message: 'Severe sleep deficit.', action: 'No high-risk tasks alone today. Report to the commander for a schedule change.' },
+      redHigh: { message: 'Sleep far longer than usual.', action: 'Notify the crew medical officer (CMO). Re-check your other vitals today.' },
     },
   },
 
@@ -135,11 +135,11 @@ export const THRESHOLDS = {
     source: '',
     input: { min: 1, max: 5, step: 1 },
     text: {
-      green: { message: 'Your mood is steady.', action: 'No action needed. Keep doing your daily check-in.' },
-      yellowLow: { message: 'Your mood is lower than usual.', action: 'Take a break, talk to a crewmate, and look at a message from home.' },
-      yellowHigh: { message: 'Your mood is steady.', action: 'No action needed.' },
-      redLow: { message: 'Your mood is very low.', action: 'Do not keep this to yourself. Talk to a crewmate you trust today.' },
-      redHigh: { message: 'Your mood is steady.', action: 'No action needed.' },
+      green: { message: 'Mood stable.', action: 'No action required. Continue the daily check-in.' },
+      yellowLow: { message: 'Mood below your usual level.', action: 'Take a break. Talk to a crewmate. View a message from home.' },
+      yellowHigh: { message: 'Mood stable.', action: 'No action required.' },
+      redLow: { message: 'Mood very low.', action: 'Do not keep this to yourself. Talk to the crew medical officer (CMO) today.' },
+      redHigh: { message: 'Mood stable.', action: 'No action required.' },
     },
   },
 }
@@ -160,8 +160,8 @@ export const SENSOR_THRESHOLDS = {
     source: '',
     decimals: 0,
     actions: {
-      yellow: 'Check the air scrubber and move to a better-ventilated module.',
-      red: 'Move the crew to another module now and fix the CO₂ removal system.',
+      yellow: 'Check the CO₂ scrubber. Move to a better-ventilated module.',
+      red: 'Move the crew to another module now. Restore CO₂ removal.',
     },
   },
   temp: {
@@ -173,8 +173,8 @@ export const SENSOR_THRESHOLDS = {
     source: '',
     decimals: 1,
     actions: {
-      yellow: 'Adjust the thermal control setting and check again in 30 minutes.',
-      red: 'Cabin temperature is unsafe. Check thermal control now.',
+      yellow: 'Adjust thermal control. Re-check in 30 min.',
+      red: 'Cabin temperature unsafe. Check thermal control now.',
     },
   },
   humidity: {
@@ -186,8 +186,8 @@ export const SENSOR_THRESHOLDS = {
     source: '',
     decimals: 0,
     actions: {
-      yellow: 'Check the humidity control system.',
-      red: 'Humidity is far out of range. Check for leaks or a failed dehumidifier.',
+      yellow: 'Check humidity control.',
+      red: 'Humidity far out of range. Check for leaks or dehumidifier failure.',
     },
   },
   noise: {
@@ -199,8 +199,8 @@ export const SENSOR_THRESHOLDS = {
     source: '',
     decimals: 0,
     actions: {
-      yellow: 'Wear hearing protection in this module and find the noisy equipment.',
-      red: 'Noise is at a harmful level. Wear hearing protection and leave the module.',
+      yellow: 'Wear hearing protection. Locate the noise source.',
+      red: 'Harmful noise level. Wear hearing protection. Leave the module.',
     },
   },
   radiation: {
@@ -212,8 +212,8 @@ export const SENSOR_THRESHOLDS = {
     source: '',
     decimals: 0,
     actions: {
-      yellow: 'Radiation is rising. Stay away from thin-walled areas and be ready to shelter.',
-      red: 'Solar storm. Go to the storm shelter now.',
+      yellow: 'Radiation rising. Avoid low-shielding areas. Prepare to shelter.',
+      red: 'Solar storm. Proceed to the storm shelter now.',
     },
   },
 }

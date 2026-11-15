@@ -32,7 +32,8 @@ function makeBands(ranges, [bottom, top]) {
 // One line chart with green / yellow / red bands behind it.
 //   points: [{ t: timestamp, value: number }]
 //   ranges: { green: [low, high], yellow: [low, high] }
-export default function TrendChart({ title, unit, points, ranges }) {
+//   fixedDomain (optional): [min, max] for the Y axis with one tick per whole number (e.g. mood 1-5).
+export default function TrendChart({ title, unit, points, ranges, fixedDomain }) {
   const { theme } = usePreferences()
   const { axis: AXIS, panel: PANEL, text: TEXT } = CHROME[theme] || CHROME.dark
 
@@ -51,7 +52,8 @@ export default function TrendChart({ title, unit, points, ranges }) {
   const low = Math.min(...values, ...limits)
   const high = Math.max(...values, ...limits)
   const pad = (high - low) * 0.12 || 1
-  const domain = [Math.floor(low - pad), Math.ceil(high + pad)]
+  const domain = fixedDomain || [Math.floor(low - pad), Math.ceil(high + pad)]
+  const ticks = fixedDomain ? Array.from({ length: fixedDomain[1] - fixedDomain[0] + 1 }, (_, i) => fixedDomain[0] + i) : undefined
 
   return (
     <section className={CARD}>
@@ -66,7 +68,7 @@ export default function TrendChart({ title, unit, points, ranges }) {
               <ReferenceArea key={`${band.from}-${band.to}`} y1={band.from} y2={band.to} fill={band.color} fillOpacity={0.13} stroke="none" ifOverflow="hidden" />
             ))}
             <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={formatDate} stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
-            <YAxis domain={domain} allowDataOverflow stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
+            <YAxis domain={domain} ticks={ticks} allowDataOverflow stroke={AXIS} tick={{ fontSize: 12, fontFamily: 'DM Mono, monospace' }} />
             <Tooltip
               contentStyle={{ background: PANEL, border: `1px solid ${GRID}`, borderRadius: 4, color: TEXT }}
               labelStyle={{ color: AXIS }}

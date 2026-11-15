@@ -14,27 +14,27 @@ export const EMERGENCIES = [
     hazards: ['G', 'D'],
     source: '', // TODO: verify + cite source
     steps: [
-      'Stop all activity. Help the person rest in a comfortable position and secure them so they do not drift.',
-      'Call the crew medical officer and bring the medical kit and the defibrillator (AED).',
-      'Measure heart rate and blood pressure and log them in this app.',
-      'Loosen tight clothing. Keep the person calm and breathing slowly.',
-      'If the person stops responding and is not breathing normally, start CPR and use the AED as trained.',
+      'Stop all activity. Restrain the crew member in a comfortable position.',
+      'Call the crew medical officer (CMO). Bring the medical kit and the defibrillator (AED).',
+      'Measure heart rate and blood pressure. Log both.',
+      'Loosen tight clothing. Keep the crew member calm, breathing slowly.',
+      'If unresponsive and not breathing normally: start CPR. Use the AED as trained.',
       'Follow the onboard medical checklist for chest pain.',
     ],
   },
   {
     id: 'collapse',
     title: 'Fainting or collapse',
-    summary: 'A crew member passes out or cannot stay upright.',
+    summary: 'A crew member loses consciousness or cannot hold position.',
     hazards: ['G', 'E'],
     source: '', // TODO: verify + cite source
     steps: [
-      'Check for a response: speak loudly and tap the shoulders.',
-      'Check for normal breathing. If there is none, start CPR and send someone for the AED.',
-      'If breathing, secure the person in a safe position and keep the airway clear.',
-      'Measure heart rate, blood pressure and blood sugar and log them.',
+      'Check for a response: speak loudly, tap the shoulders.',
+      'Check breathing. If not breathing normally: start CPR. Send for the AED.',
+      'If breathing: restrain in a safe position. Keep the airway clear.',
+      'Measure heart rate, blood pressure and blood sugar. Log all three.',
       'Check the Habitat panel for high CO₂ or other cabin alerts.',
-      'When awake, give water and do not leave the person alone.',
+      'Once awake: give water. Do not leave the crew member alone. Notify the crew medical officer (CMO).',
     ],
   },
   {
@@ -44,12 +44,12 @@ export const EMERGENCIES = [
     hazards: ['E', 'R'],
     source: '', // TODO: verify + cite source
     steps: [
-      'Measure temperature again to confirm and log it.',
-      'Have the person rest and drink fluids. Remove extra layers.',
-      'Keep the person away from the rest of the crew as much as possible.',
-      'The rest of the crew: wipe shared surfaces and check your own temperature.',
-      'Use fever medicine only as the onboard medical checklist says.',
-      'Measure again every hour and log each reading.',
+      'Re-measure temperature to confirm. Log it.',
+      'Rest and fluids. Remove extra layers.',
+      'Limit contact with the rest of the crew.',
+      'Rest of the crew: wipe down shared surfaces. Check your own temperature.',
+      'Fever medication only as the onboard medical checklist directs. Notify the crew medical officer (CMO).',
+      'Re-measure every hour. Log each reading.',
     ],
   },
   {
@@ -59,12 +59,12 @@ export const EMERGENCIES = [
     hazards: ['I'],
     source: '', // TODO: verify + cite source
     steps: [
-      'Stay with the person. Speak slowly and calmly.',
-      'Move to a quieter, less crowded spot if you can.',
-      'Breathe together: in for 4 seconds, out for 6 seconds. Keep going for a few minutes.',
-      'Ask them to name 5 things they can see and 3 things they can hear.',
-      'When calmer, measure heart rate and log it.',
-      'If chest pain or trouble breathing continues, switch to the Chest pain steps.',
+      'Stay with the crew member. Speak slowly and calmly.',
+      'Move to a quieter module if possible.',
+      'Paced breathing together: in for 4 seconds, out for 6 seconds. Continue for several minutes.',
+      'Grounding: name 5 things you can see and 3 things you can hear.',
+      'When calmer: measure heart rate. Log it.',
+      'If chest pain or breathing difficulty continues: switch to the Chest pain checklist.',
     ],
   },
   {
@@ -75,11 +75,11 @@ export const EMERGENCIES = [
     source: '', // TODO: verify + cite source
     usesShelterAdvice: true, // step 1 is replaced by the shelter advice for the current environment
     steps: [
-      'Go to the storm shelter now.',
-      'Count the crew. Everyone must be in the shelter.',
-      'Bring water, food and the medical kit. Stay until the radiation reading is back in the green.',
-      'Check each personal dosimeter and note the readings.',
-      'Watch for nausea, vomiting or unusual tiredness and log any symptoms.',
+      'Proceed to the storm shelter now.',
+      'Account for all crew. Everyone must be in the shelter.',
+      'Bring water, food and the medical kit. Remain until radiation returns to green.',
+      'Read each personal dosimeter. Record the values.',
+      'Monitor for nausea, vomiting or unusual fatigue. Log any symptoms.',
     ],
   },
 ]

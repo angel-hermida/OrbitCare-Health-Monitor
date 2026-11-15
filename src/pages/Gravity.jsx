@@ -6,7 +6,8 @@ const EARTH_JUMP_METERS = 0.5 // an average standing jump on Earth
 
 export default function Gravity() {
   const { environment } = useMission()
-  const jump = environment.gravity > 0 ? `${(EARTH_JUMP_METERS / environment.gravity).toFixed(1)} m` : 'You would float away. Strap in.'
+  const microgravity = environment.gravity === 0
+  const jump = microgravity ? 'Microgravity – jump height not applicable.' : `${(EARTH_JUMP_METERS / environment.gravity).toFixed(1)} m`
 
   return (
     <HazardPage
@@ -22,9 +23,9 @@ export default function Gravity() {
           <p className="text-sm text-oc-gray">{environment.name}</p>
         </div>
         <div>
-          <h2 className={H2}>How high you could jump</h2>
-          <p className="mt-1 font-mono text-3xl font-medium text-white">{jump}</p>
-          <p className="text-sm text-slate-400">On Earth: {EARTH_JUMP_METERS} m. Easier to move, but your bones and muscles work less.</p>
+          <h2 className={H2}>Standing jump height</h2>
+          <p className={microgravity ? 'mt-2 text-lg font-semibold text-white' : 'mt-1 font-mono text-3xl font-medium text-white'}>{jump}</p>
+          <p className="text-sm text-slate-400">Earth reference: {EARTH_JUMP_METERS} m. Lower gravity means less load on bones and muscles.</p>
         </div>
       </section>
     </HazardPage>

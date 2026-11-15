@@ -15,7 +15,7 @@ export default function HabitatPanel() {
     <section className={CARD}>
       <PageTitle title="Habitat" as="h2" size="text-xl" />
       <p className={`${LABEL} mt-2 flex items-center gap-2`}>
-        <SimulatedTag /> Simulated sensors
+        <SimulatedTag /> Cabin sensors
       </p>
 
       <ul className="mt-3 divide-y divide-oc-border/40">
