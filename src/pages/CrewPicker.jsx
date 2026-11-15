@@ -7,7 +7,7 @@ export default function CrewPicker() {
 
   return (
     <div className="mx-auto flex min-h-full max-w-4xl flex-col justify-center p-8">
-      <p className="text-sm font-semibold uppercase tracking-wide text-sky-400">AstroHealth</p>
+      <p className="text-sm font-semibold uppercase tracking-wide text-sky-400">OrbitCare</p>
       <h1 className="mt-1 text-4xl font-bold text-white">Who is checking in?</h1>
       <p className="mt-2 text-slate-300">Pick your profile. Your readings are compared with your own Earth baseline.</p>
 

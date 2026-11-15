@@ -66,7 +66,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-full">
       <aside className="w-56 shrink-0 border-r border-slate-800 bg-slate-900/50 p-4">
-        <p className="px-3 text-xl font-bold text-white">AstroHealth</p>
+        <p className="px-3 text-xl font-bold text-white">OrbitCare</p>
         <p className="px-3 text-xs text-slate-400">Crew health monitor</p>
         <nav className="mt-5 space-y-5">
           {NAV.map((group) => (
