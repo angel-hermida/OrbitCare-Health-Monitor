@@ -410,3 +410,12 @@ These lists used to show inside the app ("Not built yet" boxes). They live here 
 - [ ] Body map, streaks and points.
 - [ ] The mood questions (stress, energy, loneliness) are saved in `reading.extra` but nothing uses them yet.
 - [ ] Phone layout. The app is built for a laptop screen.
+
+
+## Use of AI (Super Intelligence) tools
+
+- **Code:** much of the app was written with help from Claude (Anthropic) via Claude Code. `CLAUDE.md` holds the instructions we gave it. The team designed, reviewed and tested all code.
+- **Data:** `demo/SYNTHETIC_medical_record_Daniel_Reyes.pdf` is synthetic test data generated with AI help. It is not a real patient.
+- **In the product:** the optional AI health assistant and medical-record extraction use the Claude API (claude-sonnet-5-5).
+- No NASA logos, insignia or mission identifiers were generated or modified with AI.
+- **Images:** the OrbitCare logo (OrbitCare Orbital Star Logo.png) and the login page background were AI-generated.
